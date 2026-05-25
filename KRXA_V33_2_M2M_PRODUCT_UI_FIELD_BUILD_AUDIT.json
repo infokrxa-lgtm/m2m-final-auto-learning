@@ -1,0 +1,35 @@
+{
+  "schema": "KRXA_V33_2_M2M_PRODUCT_UI_FIELD_BUILD",
+  "started_at": "2026-05-24T22:34:12.700502+00:00",
+  "patches": [
+    {
+      "name": "add_v332_m2m_product_helpers",
+      "detail": "M2M product UI, voice, multi-window, LLM execute routing helpers"
+    },
+    {
+      "name": "patch_krxa_chat_run_force_llm_routing",
+      "detail": "LLM 실행 명령은 KRXAI 응답 전 직접 LLM 호출"
+    },
+    {
+      "name": "add_m2m_product_get_routes",
+      "detail": "/m2m-product, /m2m, /api/m2m/status"
+    },
+    {
+      "name": "add_llm_execute_post_route",
+      "detail": "/api/llm/execute"
+    }
+  ],
+  "checks": [
+    {
+      "name": "py_compile_app_py",
+      "ok": true,
+      "detail": "OK"
+    },
+    {
+      "name": "runtime_m2m_product_field",
+      "ok": true,
+      "detail": "OK_V33_2_M2M_PRODUCT_FIELD\nSpreadsheet runtime warmup failed during python startup\nTraceback (most recent call last):\n  File \"/tmp/tmp.9eeVjt35CN/artifact_tool_v2-2.7.5/artifact_tool/patches/warm_spreadsheet_runtime_on_startup.py\", line 26, in warm_spreadsheet_runtime_on_startup\n  File \"/tmp/tmp.9eeVjt35CN/artifact_tool_v2-2.7.5/artifact_tool/spreadsheet_warmup.py\", line 785, in warm_spreadsheet_runtime\n  File \"/tmp/tmp.9eeVjt35CN/artifact_tool_v2-2.7.5/artifact_tool/spreadsheet_warmup.py\", line 720, in _warm_feature_flows\n  File \"/tmp/tmp.9eeVjt35CN/artifact_tool_v2-2.7.5/artifact_tool/spreadsheet_warmup.py\", line 704, in _warm_collaboration_flows\n  File \"/tmp/tmp.9eeVjt35CN/artifact_tool_v2-2.7.5/artifact_tool/generated/interface/models.py\", line 48821, in hydrate_crdt_from_proto\n  File \"/tmp/tmp.9eeVjt35CN/artifact_tool_v2-2.7.5/artifact_tool/rpc/remote.py\", line 747, in __call__\n  File \"/tmp/tmp.9eeVjt35CN/artifact_tool_v2-2.7.5/artifact_tool/rpc/client.py\", line 150, in call\nartifact_tool.rpc.client.RemoteError: hydrateCrdtFromProto requires an empty collaborative document.\n"
+    }
+  ],
+  "finished_at": "2026-05-24T22:34:18.208401+00:00"
+}

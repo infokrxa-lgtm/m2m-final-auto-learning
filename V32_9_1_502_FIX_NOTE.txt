@@ -1,0 +1,18 @@
+KRXA V32.9.1 LLM CONTROL BAR 502 FIX
+
+수정 내용:
+1. /user 502 원인 수정
+   - Render 로그: NameError: name 'display' is not defined
+   - 원인: f-string HTML 내부 CSS `.llmbar{display:flex...}` 중괄호 미이스케이프
+   - 조치: f-string 함수의 llmbar CSS 중괄호를 `{{ }}`로 이스케이프
+
+2. LLM CONTROL BAR 버튼 JS 연결 보강
+   - llmControlStatus()
+   - llmControlMode(mode)
+   - /api/llm/control/status
+   - /api/llm/control/mode
+
+검증:
+- py_compile OK
+- krxa_v326_real_control_center_html('user') 실행 OK
+- krxa_window_page_html / krxa_workspace_html / krxa_v324_shell 실행 OK

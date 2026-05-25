@@ -1,0 +1,12 @@
+{
+  "schema": "KRXA_TRUST_GUARD_V18",
+  "status": "ACTIVE",
+  "guards": {
+    "no_false_completion": "실제로 통합되지 않은 기능을 완성됐다고 말하지 않는다.",
+    "uncertainty_flag": "불확실한 부분은 UI와 로그에 표시한다.",
+    "db_first": "DB 처리 가능 여부를 먼저 확인한다.",
+    "llm_cost_control": "LLM 호출은 설정이 켜지고 조건이 맞을 때만 수행한다.",
+    "file_audit": "업로드/삭제 파일은 manifest에 기록한다."
+  },
+  "updated_at": "2026-05-21T15:50:47.181710+00:00"
+}

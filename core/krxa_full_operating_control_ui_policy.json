@@ -1,0 +1,45 @@
+{
+  "schema": "KRXA_FULL_OPERATING_CONTROL_UI_POLICY_V32_3",
+  "mode": "all_features_operable",
+  "principle": "모든 UI 버튼은 실제 API와 연결되어야 하며, 조회/생성/수정/삭제/실행/다운로드/자동 tick을 수행해야 한다.",
+  "modules": {
+    "chat": [
+      "run",
+      "history"
+    ],
+    "krxai": [
+      "think",
+      "report_run"
+    ],
+    "db": [
+      "read",
+      "edit",
+      "save"
+    ],
+    "memory": [
+      "read",
+      "add",
+      "delete"
+    ],
+    "task": [
+      "read",
+      "add",
+      "run_tick",
+      "delete"
+    ],
+    "file": [
+      "list",
+      "create_report",
+      "download",
+      "delete"
+    ],
+    "realtime": [
+      "status",
+      "events"
+    ],
+    "apilog": [
+      "read"
+    ]
+  },
+  "updated_at": "2026-05-23T01:35:44.758942+00:00"
+}

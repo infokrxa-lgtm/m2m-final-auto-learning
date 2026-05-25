@@ -1,0 +1,16 @@
+{
+  "schema": "KRXA_MULTI_USER_MEMORY_ISOLATION_POLICY_V31",
+  "mode": "user_isolated_memory",
+  "default_user_id": "default",
+  "memory_path_pattern": "memory/{user_id}/memory.json",
+  "principle": "모든 MEMORY 조회/저장은 user_id 기준으로 격리한다.",
+  "applies_to": [
+    "KRXAI",
+    "CONTROL",
+    "TASK",
+    "MEMORY",
+    "REPORT",
+    "WEB_LEARNING"
+  ],
+  "updated_at": "2026-05-22T13:56:59.717224+00:00"
+}

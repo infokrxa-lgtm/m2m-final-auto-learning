@@ -1,0 +1,18 @@
+{
+  "schema": "KRXA_CORE_PRINCIPLES_V18",
+  "title": "KRXA Core Principle Integration",
+  "mode": "control_center_complete_rebuild",
+  "principles": {
+    "file_based_system": "모든 상태와 구조는 파일/JSON으로 존재한다.",
+    "storage_independent": "Google Drive, GitHub, Render, 로컬 등 저장소에 종속되지 않는다.",
+    "recall_core": "KRXA RECALL CORE 호출로 구조·기억·저장소·실행 흐름을 복원한다.",
+    "memory_loop": "입력 → 처리 → 저장 → 재사용 → 개선 → 다시 입력의 순환을 유지한다.",
+    "fractal_structure": "전체 구조와 하위 모듈은 동일한 패턴으로 반복·확장된다.",
+    "glutathione_structure": "시스템 독성/오염/붕괴를 흡수·정화·복원하는 보호 구조를 둔다.",
+    "trust_guard": "불확실한 내용은 단정하지 않고, 상태·로그·근거를 남긴다.",
+    "local_first_https_operated": "로컬 완성 후 HTTPS 운영본을 기준으로 수정·검증·배포한다.",
+    "llm_as_callable_expert": "LLM은 항상 호출하지 않고 DB로 부족할 때만 호출한다."
+  },
+  "recall_phrase": "KRXA RECALL CORE",
+  "updated_at": "2026-05-21T15:50:47.181710+00:00"
+}

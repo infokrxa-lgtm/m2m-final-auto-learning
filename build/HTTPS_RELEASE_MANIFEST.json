@@ -1,0 +1,5 @@
+{
+  "schema": "KRXA_HTTPS_RELEASE_MANIFEST_V9",
+  "artifact": "build/KRXA_RELEASE.zip",
+  "sha256": "315eff139b80920f1269a5cac691af0beddfaadbeee229b902597111da051bb4"
+}

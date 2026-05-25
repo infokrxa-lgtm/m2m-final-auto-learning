@@ -1,0 +1,43 @@
+{
+  "schema": "KRXA_WINDOW_WORKSPACE_POLICY_V31_5",
+  "mode": "window_workspace_operation",
+  "principle": "각 상단 버튼은 독립 업무창을 열고, 각 업무창은 조회/신규/수정/저장/삭제/실행 기능을 실제 API와 연결한다.",
+  "windows": {
+    "krxai": [
+      "discussion_create",
+      "discussion_run",
+      "result_save"
+    ],
+    "db": [
+      "db_select",
+      "db_edit",
+      "db_save",
+      "db_validate"
+    ],
+    "memory": [
+      "memory_read",
+      "memory_add",
+      "memory_delete",
+      "memory_refresh"
+    ],
+    "task": [
+      "task_add",
+      "task_read",
+      "task_tick",
+      "task_status_change"
+    ],
+    "file": [
+      "report_create",
+      "file_list",
+      "download",
+      "delete",
+      "upload"
+    ],
+    "apilog": [
+      "log_read",
+      "filter",
+      "refresh"
+    ]
+  },
+  "updated_at": "2026-05-22T22:21:43.282157+00:00"
+}

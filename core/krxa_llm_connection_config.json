@@ -1,0 +1,21 @@
+{
+  "schema": "KRXA_LLM_CONNECTION_CONFIG_V32_8",
+  "llm_enabled": false,
+  "mode": "off_auto_force",
+  "provider": "openai",
+  "model_env": "OPENAI_MODEL",
+  "api_key_env": "OPENAI_API_KEY",
+  "principle": "OFF/AUTO/FORCE 제어. 기본은 OFF 또는 사용자가 선택한 모드.",
+  "rules": {
+    "off": "internal_db_language_memory_only",
+    "on": "internal_first_then_llm_when_needed",
+    "result_must_include": [
+      "llm_enabled",
+      "llm_used",
+      "llm_reason"
+    ]
+  },
+  "updated_at": "2026-05-23T04:33:47.041219+00:00",
+  "force_llm": false,
+  "llm_mode": "off"
+}

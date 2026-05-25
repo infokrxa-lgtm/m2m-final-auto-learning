@@ -1,0 +1,33 @@
+{
+  "schema": "KRXA_FULL_SYSTEM_MANIFEST_V18",
+  "version": "v18",
+  "name": "KRXA FULL SYSTEM REBUILD",
+  "description": "V16 Control Center 구조와 V17 LLM Bridge, 파일 교환, DB, 멀티유저, HTTPS 서버를 하나의 정본으로 재조립한 버전.",
+  "entrypoints": {
+    "home": "/",
+    "control": "/control",
+    "user": "/user",
+    "multi": "/multi",
+    "krxai": "/krxai",
+    "files": "/files",
+    "health": "/api/health"
+  },
+  "modules": [
+    "control_center",
+    "user_ui",
+    "multi_user",
+    "krxai_console",
+    "db_manager",
+    "file_exchange",
+    "llm_bridge",
+    "trust_guard",
+    "memory_loop",
+    "autostart_policy",
+    "storage_index"
+  ],
+  "render": {
+    "start_command": "python app.py",
+    "bind": "0.0.0.0:$PORT"
+  },
+  "updated_at": "2026-05-21T15:50:47.181710+00:00"
+}

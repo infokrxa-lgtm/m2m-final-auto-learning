@@ -1,0 +1,205 @@
+{
+  "session_state": "ROOM_CONNECTED",
+  "user_flow": {
+    "terms": true,
+    "app_activated": true,
+    "alive_home": true,
+    "security_selected": true,
+    "translation_success": true,
+    "room_connected": true
+  },
+  "state_history": [
+    {
+      "ts": "2026-05-21T09:49:41.065127+00:00",
+      "from": "INIT",
+      "to": "TERMS_ACCEPTED",
+      "reason": "run_until"
+    },
+    {
+      "ts": "2026-05-21T09:49:41.066430+00:00",
+      "from": "TERMS_ACCEPTED",
+      "to": "APP_ACTIVATED",
+      "reason": "run_until"
+    },
+    {
+      "ts": "2026-05-21T09:49:41.067525+00:00",
+      "from": "APP_ACTIVATED",
+      "to": "ALIVE_HOME",
+      "reason": "run_until"
+    },
+    {
+      "ts": "2026-05-21T09:49:41.068705+00:00",
+      "from": "ALIVE_HOME",
+      "to": "SECURITY_SELECTED",
+      "reason": "run_until"
+    },
+    {
+      "ts": "2026-05-21T09:49:41.070157+00:00",
+      "from": "SECURITY_SELECTED",
+      "to": "TRANSLATE_SUCCESS",
+      "reason": "message_converted"
+    },
+    {
+      "ts": "2026-05-21T09:49:41.070955+00:00",
+      "from": "TRANSLATE_SUCCESS",
+      "to": "QUEUE_JOINED",
+      "reason": "queue_join"
+    },
+    {
+      "ts": "2026-05-21T09:49:41.071819+00:00",
+      "from": "QUEUE_JOINED",
+      "to": "MATCH_FOUND",
+      "reason": "match_room"
+    },
+    {
+      "ts": "2026-05-21T09:49:41.072428+00:00",
+      "from": "MATCH_FOUND",
+      "to": "ROOM_CONNECTED",
+      "reason": "room_connected"
+    },
+    {
+      "ts": "2026-05-21T09:49:42.335925+00:00",
+      "from": "ROOM_CONNECTED",
+      "to": "RECONNECTING",
+      "reason": "network_reconnect"
+    },
+    {
+      "ts": "2026-05-21T09:49:42.337808+00:00",
+      "from": "RECONNECTING",
+      "to": "ROOM_RECOVERED",
+      "reason": "recovery_complete"
+    },
+    {
+      "ts": "2026-05-21T10:00:30.814760+00:00",
+      "from": "ROOM_RECOVERED",
+      "to": "INIT",
+      "reason": "reset"
+    },
+    {
+      "ts": "2026-05-21T10:00:34.038881+00:00",
+      "from": "INIT",
+      "to": "TERMS_ACCEPTED",
+      "reason": "run_until"
+    },
+    {
+      "ts": "2026-05-21T10:00:34.040625+00:00",
+      "from": "TERMS_ACCEPTED",
+      "to": "APP_ACTIVATED",
+      "reason": "run_until"
+    },
+    {
+      "ts": "2026-05-21T10:00:34.041836+00:00",
+      "from": "APP_ACTIVATED",
+      "to": "ALIVE_HOME",
+      "reason": "run_until"
+    },
+    {
+      "ts": "2026-05-21T10:00:34.043512+00:00",
+      "from": "ALIVE_HOME",
+      "to": "SECURITY_SELECTED",
+      "reason": "run_until"
+    },
+    {
+      "ts": "2026-05-21T10:00:34.045698+00:00",
+      "from": "SECURITY_SELECTED",
+      "to": "TRANSLATE_SUCCESS",
+      "reason": "message_converted"
+    },
+    {
+      "ts": "2026-05-21T10:00:34.046991+00:00",
+      "from": "TRANSLATE_SUCCESS",
+      "to": "QUEUE_JOINED",
+      "reason": "queue_join"
+    },
+    {
+      "ts": "2026-05-21T10:00:34.048157+00:00",
+      "from": "QUEUE_JOINED",
+      "to": "MATCH_FOUND",
+      "reason": "match_room"
+    },
+    {
+      "ts": "2026-05-21T10:00:34.049001+00:00",
+      "from": "MATCH_FOUND",
+      "to": "ROOM_CONNECTED",
+      "reason": "room_connected"
+    },
+    {
+      "ts": "2026-05-21T10:00:45.374381+00:00",
+      "from": "ROOM_CONNECTED",
+      "to": "INIT",
+      "reason": "reset"
+    },
+    {
+      "ts": "2026-05-21T12:50:00.188056+00:00",
+      "from": "INIT",
+      "to": "TERMS_ACCEPTED",
+      "reason": "run_until"
+    },
+    {
+      "ts": "2026-05-21T12:50:00.192027+00:00",
+      "from": "TERMS_ACCEPTED",
+      "to": "APP_ACTIVATED",
+      "reason": "run_until"
+    },
+    {
+      "ts": "2026-05-21T12:50:00.195304+00:00",
+      "from": "APP_ACTIVATED",
+      "to": "ALIVE_HOME",
+      "reason": "run_until"
+    },
+    {
+      "ts": "2026-05-21T12:50:00.198455+00:00",
+      "from": "ALIVE_HOME",
+      "to": "SECURITY_SELECTED",
+      "reason": "run_until"
+    },
+    {
+      "ts": "2026-05-21T12:50:00.203856+00:00",
+      "from": "SECURITY_SELECTED",
+      "to": "TRANSLATE_SUCCESS",
+      "reason": "input_flow_intent:greeting"
+    },
+    {
+      "ts": "2026-05-21T12:50:00.208075+00:00",
+      "from": "TRANSLATE_SUCCESS",
+      "to": "QUEUE_JOINED",
+      "reason": "queue_join"
+    },
+    {
+      "ts": "2026-05-21T12:50:00.212104+00:00",
+      "from": "QUEUE_JOINED",
+      "to": "MATCH_FOUND",
+      "reason": "match_room"
+    },
+    {
+      "ts": "2026-05-21T12:50:00.215434+00:00",
+      "from": "MATCH_FOUND",
+      "to": "ROOM_CONNECTED",
+      "reason": "room_connected"
+    },
+    {
+      "ts": "2026-05-21T12:50:02.553027+00:00",
+      "from": "ROOM_CONNECTED",
+      "to": "TRANSLATE_SUCCESS",
+      "reason": "input_flow_intent:greeting"
+    },
+    {
+      "ts": "2026-05-21T12:50:02.557572+00:00",
+      "from": "TRANSLATE_SUCCESS",
+      "to": "QUEUE_JOINED",
+      "reason": "queue_join"
+    },
+    {
+      "ts": "2026-05-21T12:50:02.560911+00:00",
+      "from": "QUEUE_JOINED",
+      "to": "MATCH_FOUND",
+      "reason": "match_room"
+    },
+    {
+      "ts": "2026-05-21T12:50:02.563944+00:00",
+      "from": "MATCH_FOUND",
+      "to": "ROOM_CONNECTED",
+      "reason": "room_connected"
+    }
+  ]
+}

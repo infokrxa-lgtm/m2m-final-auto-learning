@@ -1,0 +1,23 @@
+{
+  "schema": "KRXA_LLM_BRIDGE_V19",
+  "enabled": false,
+  "provider": "openai_responses_api",
+  "model": "gpt-5.5",
+  "mode": "smart_call_control",
+  "call_policy": {
+    "db_first": true,
+    "call_llm_when_intent_unknown": true,
+    "call_llm_when_user_requests_ai": true,
+    "max_context_chars": 6000,
+    "max_output_chars": 2400,
+    "call_llm_for_control_questions": true,
+    "deny_always_call_mode": true,
+    "cost_guard": "LLM is optional and should be called only when DB/rules are insufficient."
+  },
+  "environment": {
+    "api_key_env": "OPENAI_API_KEY",
+    "model_env": "OPENAI_MODEL"
+  },
+  "updated_at": "2026-05-21T15:42:41.684125+00:00",
+  "integration": "KRXAI_CONSOLE + CONTROL_AI_CALL + DB_FIRST_POLICY"
+}

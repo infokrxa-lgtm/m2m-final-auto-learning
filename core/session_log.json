@@ -1,0 +1,468 @@
+{
+  "system": "KRXA",
+  "logs": [
+    {
+      "event": "LOCAL_BUILD_START",
+      "state": "INIT",
+      "note": "KRXA 로컬 제작 모드 시작"
+    },
+    {
+      "ts": "2026-05-21T09:49:41.063880+00:00",
+      "event": "M2M_DEMO_START",
+      "state": "INIT",
+      "note": "local execution demo start",
+      "payload": {}
+    },
+    {
+      "ts": "2026-05-21T09:49:41.065557+00:00",
+      "event": "STATE_TRANSITION",
+      "state": "TERMS_ACCEPTED",
+      "note": "INIT -> TERMS_ACCEPTED",
+      "payload": {
+        "reason": "run_until"
+      }
+    },
+    {
+      "ts": "2026-05-21T09:49:41.066725+00:00",
+      "event": "STATE_TRANSITION",
+      "state": "APP_ACTIVATED",
+      "note": "TERMS_ACCEPTED -> APP_ACTIVATED",
+      "payload": {
+        "reason": "run_until"
+      }
+    },
+    {
+      "ts": "2026-05-21T09:49:41.067932+00:00",
+      "event": "STATE_TRANSITION",
+      "state": "ALIVE_HOME",
+      "note": "APP_ACTIVATED -> ALIVE_HOME",
+      "payload": {
+        "reason": "run_until"
+      }
+    },
+    {
+      "ts": "2026-05-21T09:49:41.069039+00:00",
+      "event": "STATE_TRANSITION",
+      "state": "SECURITY_SELECTED",
+      "note": "ALIVE_HOME -> SECURITY_SELECTED",
+      "payload": {
+        "reason": "run_until"
+      }
+    },
+    {
+      "ts": "2026-05-21T09:49:41.069749+00:00",
+      "event": "MESSAGE_DELIVERED",
+      "state": "SECURITY_SELECTED",
+      "note": "local m2m message delivered",
+      "payload": {
+        "ts": "2026-05-21T09:49:41.069449+00:00",
+        "source": "user_A",
+        "target": "user_B",
+        "input": "안녕하세요. 말대말 로컬 실행 테스트입니다.",
+        "output": "[M2M:user_B] 안녕하세요. 말대말 로컬 실행 테스트입니다."
+      }
+    },
+    {
+      "ts": "2026-05-21T09:49:41.070388+00:00",
+      "event": "STATE_TRANSITION",
+      "state": "TRANSLATE_SUCCESS",
+      "note": "SECURITY_SELECTED -> TRANSLATE_SUCCESS",
+      "payload": {
+        "reason": "message_converted"
+      }
+    },
+    {
+      "ts": "2026-05-21T09:49:41.071157+00:00",
+      "event": "STATE_TRANSITION",
+      "state": "QUEUE_JOINED",
+      "note": "TRANSLATE_SUCCESS -> QUEUE_JOINED",
+      "payload": {
+        "reason": "queue_join"
+      }
+    },
+    {
+      "ts": "2026-05-21T09:49:41.072037+00:00",
+      "event": "STATE_TRANSITION",
+      "state": "MATCH_FOUND",
+      "note": "QUEUE_JOINED -> MATCH_FOUND",
+      "payload": {
+        "reason": "match_room"
+      }
+    },
+    {
+      "ts": "2026-05-21T09:49:41.072622+00:00",
+      "event": "STATE_TRANSITION",
+      "state": "ROOM_CONNECTED",
+      "note": "MATCH_FOUND -> ROOM_CONNECTED",
+      "payload": {
+        "reason": "room_connected"
+      }
+    },
+    {
+      "ts": "2026-05-21T09:49:41.072882+00:00",
+      "event": "M2M_DEMO_COMPLETE",
+      "state": "ROOM_CONNECTED",
+      "note": "local m2m flow reached ROOM_CONNECTED",
+      "payload": {}
+    },
+    {
+      "ts": "2026-05-21T09:49:42.336386+00:00",
+      "event": "STATE_TRANSITION",
+      "state": "RECONNECTING",
+      "note": "ROOM_CONNECTED -> RECONNECTING",
+      "payload": {
+        "reason": "network_reconnect"
+      }
+    },
+    {
+      "ts": "2026-05-21T09:49:42.338148+00:00",
+      "event": "STATE_TRANSITION",
+      "state": "ROOM_RECOVERED",
+      "note": "RECONNECTING -> ROOM_RECOVERED",
+      "payload": {
+        "reason": "recovery_complete"
+      }
+    },
+    {
+      "ts": "2026-05-21T10:00:30.815630+00:00",
+      "event": "STATE_TRANSITION",
+      "state": "INIT",
+      "note": "ROOM_RECOVERED -> INIT",
+      "payload": {
+        "reason": "reset"
+      }
+    },
+    {
+      "ts": "2026-05-21T10:00:30.817509+00:00",
+      "event": "ENGINE_RESET",
+      "state": "INIT",
+      "note": "KRXA engine reset complete",
+      "payload": {}
+    },
+    {
+      "ts": "2026-05-21T10:00:34.037454+00:00",
+      "event": "M2M_DEMO_START",
+      "state": "INIT",
+      "note": "local execution demo start",
+      "payload": {}
+    },
+    {
+      "ts": "2026-05-21T10:00:34.039429+00:00",
+      "event": "STATE_TRANSITION",
+      "state": "TERMS_ACCEPTED",
+      "note": "INIT -> TERMS_ACCEPTED",
+      "payload": {
+        "reason": "run_until"
+      }
+    },
+    {
+      "ts": "2026-05-21T10:00:34.041033+00:00",
+      "event": "STATE_TRANSITION",
+      "state": "APP_ACTIVATED",
+      "note": "TERMS_ACCEPTED -> APP_ACTIVATED",
+      "payload": {
+        "reason": "run_until"
+      }
+    },
+    {
+      "ts": "2026-05-21T10:00:34.042257+00:00",
+      "event": "STATE_TRANSITION",
+      "state": "ALIVE_HOME",
+      "note": "APP_ACTIVATED -> ALIVE_HOME",
+      "payload": {
+        "reason": "run_until"
+      }
+    },
+    {
+      "ts": "2026-05-21T10:00:34.043999+00:00",
+      "event": "STATE_TRANSITION",
+      "state": "SECURITY_SELECTED",
+      "note": "ALIVE_HOME -> SECURITY_SELECTED",
+      "payload": {
+        "reason": "run_until"
+      }
+    },
+    {
+      "ts": "2026-05-21T10:00:34.044950+00:00",
+      "event": "MESSAGE_DELIVERED",
+      "state": "SECURITY_SELECTED",
+      "note": "local m2m message delivered",
+      "payload": {
+        "ts": "2026-05-21T10:00:34.044538+00:00",
+        "source": "user_A",
+        "target": "user_B",
+        "input": "KRXA v3 CANON 검증",
+        "output": "[M2M:user_B] KRXA v3 CANON 검증"
+      }
+    },
+    {
+      "ts": "2026-05-21T10:00:34.046078+00:00",
+      "event": "STATE_TRANSITION",
+      "state": "TRANSLATE_SUCCESS",
+      "note": "SECURITY_SELECTED -> TRANSLATE_SUCCESS",
+      "payload": {
+        "reason": "message_converted"
+      }
+    },
+    {
+      "ts": "2026-05-21T10:00:34.047375+00:00",
+      "event": "STATE_TRANSITION",
+      "state": "QUEUE_JOINED",
+      "note": "TRANSLATE_SUCCESS -> QUEUE_JOINED",
+      "payload": {
+        "reason": "queue_join"
+      }
+    },
+    {
+      "ts": "2026-05-21T10:00:34.048468+00:00",
+      "event": "STATE_TRANSITION",
+      "state": "MATCH_FOUND",
+      "note": "QUEUE_JOINED -> MATCH_FOUND",
+      "payload": {
+        "reason": "match_room"
+      }
+    },
+    {
+      "ts": "2026-05-21T10:00:34.049342+00:00",
+      "event": "STATE_TRANSITION",
+      "state": "ROOM_CONNECTED",
+      "note": "MATCH_FOUND -> ROOM_CONNECTED",
+      "payload": {
+        "reason": "room_connected"
+      }
+    },
+    {
+      "ts": "2026-05-21T10:00:34.049800+00:00",
+      "event": "M2M_DEMO_COMPLETE",
+      "state": "ROOM_CONNECTED",
+      "note": "local m2m flow reached ROOM_CONNECTED",
+      "payload": {}
+    },
+    {
+      "ts": "2026-05-21T10:00:45.374814+00:00",
+      "event": "STATE_TRANSITION",
+      "state": "INIT",
+      "note": "ROOM_CONNECTED -> INIT",
+      "payload": {
+        "reason": "reset"
+      }
+    },
+    {
+      "ts": "2026-05-21T10:00:45.375940+00:00",
+      "event": "ENGINE_RESET",
+      "state": "INIT",
+      "note": "KRXA engine reset complete",
+      "payload": {}
+    },
+    {
+      "ts": "2026-05-21T12:50:00.186193+00:00",
+      "event": "INPUT_FLOW_START",
+      "state": "INIT",
+      "note": "user input flow start",
+      "payload": {
+        "schema": "KRXA_INPUT_STATE_V1",
+        "source": "local_default",
+        "session_id": "input_flow_local",
+        "from": "user_A",
+        "to": "user_B",
+        "source_lang": "ko",
+        "target_lang": "en",
+        "mode": "m2m",
+        "text": "안녕하세요",
+        "created_at": null
+      }
+    },
+    {
+      "ts": "2026-05-21T12:50:00.188829+00:00",
+      "event": "STATE_TRANSITION",
+      "state": "TERMS_ACCEPTED",
+      "note": "INIT -> TERMS_ACCEPTED",
+      "payload": {
+        "reason": "run_until"
+      }
+    },
+    {
+      "ts": "2026-05-21T12:50:00.193125+00:00",
+      "event": "STATE_TRANSITION",
+      "state": "APP_ACTIVATED",
+      "note": "TERMS_ACCEPTED -> APP_ACTIVATED",
+      "payload": {
+        "reason": "run_until"
+      }
+    },
+    {
+      "ts": "2026-05-21T12:50:00.196374+00:00",
+      "event": "STATE_TRANSITION",
+      "state": "ALIVE_HOME",
+      "note": "APP_ACTIVATED -> ALIVE_HOME",
+      "payload": {
+        "reason": "run_until"
+      }
+    },
+    {
+      "ts": "2026-05-21T12:50:00.199748+00:00",
+      "event": "STATE_TRANSITION",
+      "state": "SECURITY_SELECTED",
+      "note": "ALIVE_HOME -> SECURITY_SELECTED",
+      "payload": {
+        "reason": "run_until"
+      }
+    },
+    {
+      "ts": "2026-05-21T12:50:00.202486+00:00",
+      "event": "MESSAGE_DELIVERED",
+      "state": "SECURITY_SELECTED",
+      "note": "local m2m message delivered",
+      "payload": {
+        "ts": "2026-05-21T12:50:00.201199+00:00",
+        "source": "user_A",
+        "target": "user_B",
+        "input": "안녕하세요",
+        "output": "[M2M:user_B] Hello"
+      }
+    },
+    {
+      "ts": "2026-05-21T12:50:00.204833+00:00",
+      "event": "STATE_TRANSITION",
+      "state": "TRANSLATE_SUCCESS",
+      "note": "SECURITY_SELECTED -> TRANSLATE_SUCCESS",
+      "payload": {
+        "reason": "input_flow_intent:greeting"
+      }
+    },
+    {
+      "ts": "2026-05-21T12:50:00.209644+00:00",
+      "event": "STATE_TRANSITION",
+      "state": "QUEUE_JOINED",
+      "note": "TRANSLATE_SUCCESS -> QUEUE_JOINED",
+      "payload": {
+        "reason": "queue_join"
+      }
+    },
+    {
+      "ts": "2026-05-21T12:50:00.213187+00:00",
+      "event": "STATE_TRANSITION",
+      "state": "MATCH_FOUND",
+      "note": "QUEUE_JOINED -> MATCH_FOUND",
+      "payload": {
+        "reason": "match_room"
+      }
+    },
+    {
+      "ts": "2026-05-21T12:50:00.216424+00:00",
+      "event": "STATE_TRANSITION",
+      "state": "ROOM_CONNECTED",
+      "note": "MATCH_FOUND -> ROOM_CONNECTED",
+      "payload": {
+        "reason": "room_connected"
+      }
+    },
+    {
+      "ts": "2026-05-21T12:50:00.219731+00:00",
+      "event": "INPUT_FLOW_COMPLETE",
+      "state": "ROOM_CONNECTED",
+      "note": "input flow connected to KRXADB",
+      "payload": {
+        "schema": "KRXA_INPUT_FLOW_RESULT_V1",
+        "state": "ROOM_CONNECTED",
+        "session_id": "input_flow_local",
+        "intent": "greeting",
+        "intent_confidence": 0.9,
+        "convert_confidence": 0.95,
+        "from": "user_A",
+        "to": "user_B",
+        "input": "안녕하세요",
+        "output": "[M2M:user_B] Hello",
+        "mode": "m2m",
+        "updated_at": "2026-05-21T12:50:00.217757+00:00"
+      }
+    },
+    {
+      "ts": "2026-05-21T12:50:02.547028+00:00",
+      "event": "INPUT_FLOW_START",
+      "state": "ROOM_CONNECTED",
+      "note": "user input flow start",
+      "payload": {
+        "schema": "KRXA_INPUT_STATE_V1",
+        "source": "local_default",
+        "session_id": "input_flow_local",
+        "from": "user_A",
+        "to": "user_B",
+        "source_lang": "ko",
+        "target_lang": "en",
+        "mode": "m2m",
+        "text": "안녕하세요",
+        "created_at": null
+      }
+    },
+    {
+      "ts": "2026-05-21T12:50:02.550795+00:00",
+      "event": "MESSAGE_DELIVERED",
+      "state": "ROOM_CONNECTED",
+      "note": "local m2m message delivered",
+      "payload": {
+        "ts": "2026-05-21T12:50:02.548972+00:00",
+        "source": "user_A",
+        "target": "user_B",
+        "input": "안녕하세요",
+        "output": "[M2M:user_B] Hello"
+      }
+    },
+    {
+      "ts": "2026-05-21T12:50:02.554680+00:00",
+      "event": "STATE_TRANSITION",
+      "state": "TRANSLATE_SUCCESS",
+      "note": "ROOM_CONNECTED -> TRANSLATE_SUCCESS",
+      "payload": {
+        "reason": "input_flow_intent:greeting"
+      }
+    },
+    {
+      "ts": "2026-05-21T12:50:02.558464+00:00",
+      "event": "STATE_TRANSITION",
+      "state": "QUEUE_JOINED",
+      "note": "TRANSLATE_SUCCESS -> QUEUE_JOINED",
+      "payload": {
+        "reason": "queue_join"
+      }
+    },
+    {
+      "ts": "2026-05-21T12:50:02.562058+00:00",
+      "event": "STATE_TRANSITION",
+      "state": "MATCH_FOUND",
+      "note": "QUEUE_JOINED -> MATCH_FOUND",
+      "payload": {
+        "reason": "match_room"
+      }
+    },
+    {
+      "ts": "2026-05-21T12:50:02.566451+00:00",
+      "event": "STATE_TRANSITION",
+      "state": "ROOM_CONNECTED",
+      "note": "MATCH_FOUND -> ROOM_CONNECTED",
+      "payload": {
+        "reason": "room_connected"
+      }
+    },
+    {
+      "ts": "2026-05-21T12:50:02.568826+00:00",
+      "event": "INPUT_FLOW_COMPLETE",
+      "state": "ROOM_CONNECTED",
+      "note": "input flow connected to KRXADB",
+      "payload": {
+        "schema": "KRXA_INPUT_FLOW_RESULT_V1",
+        "state": "ROOM_CONNECTED",
+        "session_id": "input_flow_local",
+        "intent": "greeting",
+        "intent_confidence": 0.9,
+        "convert_confidence": 0.95,
+        "from": "user_A",
+        "to": "user_B",
+        "input": "안녕하세요",
+        "output": "[M2M:user_B] Hello",
+        "mode": "m2m",
+        "updated_at": "2026-05-21T12:50:02.567403+00:00"
+      }
+    }
+  ]
+}

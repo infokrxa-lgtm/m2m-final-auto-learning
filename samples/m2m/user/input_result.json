@@ -1,0 +1,14 @@
+{
+  "schema": "KRXA_INPUT_FLOW_RESULT_V1",
+  "state": "ROOM_CONNECTED",
+  "session_id": "input_flow_local",
+  "intent": "greeting",
+  "intent_confidence": 0.9,
+  "convert_confidence": 0.95,
+  "from": "user_A",
+  "to": "user_B",
+  "input": "안녕하세요",
+  "output": "[M2M:user_B] Hello",
+  "mode": "m2m",
+  "updated_at": "2026-05-21T12:50:02.567403+00:00"
+}

@@ -1,0 +1,214 @@
+{
+  "schema": "KRXA_BUILD_MANIFEST_V9",
+  "build": "v9_INPUT_FLOW_CONNECT",
+  "files": [
+    {
+      "path": ".nojekyll",
+      "size": 0
+    },
+    {
+      "path": "CONTROL_UI_STATUS.md",
+      "size": 270
+    },
+    {
+      "path": "HTTPS_NODE_STATUS.md",
+      "size": 551
+    },
+    {
+      "path": "INPUT_FLOW_CONNECT_STATUS.md",
+      "size": 523
+    },
+    {
+      "path": "KRXADB_SPLIT_STATUS.md",
+      "size": 270
+    },
+    {
+      "path": "KRXA_CANON_STATUS.md",
+      "size": 404
+    },
+    {
+      "path": "KRXA_DB_PROBE.bat",
+      "size": 43
+    },
+    {
+      "path": "KRXA_INPUT_FLOW_CONNECT.bat",
+      "size": 45
+    },
+    {
+      "path": "KRXA_OPEN_CONTROL_UI.bat",
+      "size": 48
+    },
+    {
+      "path": "KRXA_OPEN_USER_UI.bat",
+      "size": 51
+    },
+    {
+      "path": "KRXA_PAGES_PUSH.bat",
+      "size": 92
+    },
+    {
+      "path": "KRXA_PREPARE_HTTPS_RELEASE.bat",
+      "size": 56
+    },
+    {
+      "path": "KRXA_REGISTER_HTTPS_NODE.bat",
+      "size": 148
+    },
+    {
+      "path": "KRXA_RESET.bat",
+      "size": 41
+    },
+    {
+      "path": "KRXA_RUN.bat",
+      "size": 42
+    },
+    {
+      "path": "KRXA_RUN_M2M.bat",
+      "size": 43
+    },
+    {
+      "path": "PAGES_DEPLOY_STATUS.md",
+      "size": 448
+    },
+    {
+      "path": "README.md",
+      "size": 1584
+    },
+    {
+      "path": "USER_UI_STATUS.md",
+      "size": 250
+    },
+    {
+      "path": "admin/control_ui.html",
+      "size": 9175
+    },
+    {
+      "path": "build/BUILD_MANIFEST.json",
+      "size": 672
+    },
+    {
+      "path": "build/HTTPS_RELEASE_MANIFEST.json",
+      "size": 1371
+    },
+    {
+      "path": "core/control_state.json",
+      "size": 798
+    },
+    {
+      "path": "core/db_index.json",
+      "size": 615
+    },
+    {
+      "path": "core/krxai_db.json",
+      "size": 1488
+    },
+    {
+      "path": "core/language_base.json",
+      "size": 274
+    },
+    {
+      "path": "core/language_db.json",
+      "size": 1707
+    },
+    {
+      "path": "core/session_log.json",
+      "size": 12746
+    },
+    {
+      "path": "core/storage_index.json",
+      "size": 1408
+    },
+    {
+      "path": "index.html",
+      "size": 1600
+    },
+    {
+      "path": "run_krxa.py",
+      "size": 73
+    },
+    {
+      "path": "samples/m2m/dev/state_machine_spec.json",
+      "size": 365
+    },
+    {
+      "path": "samples/m2m/user/input_result.json",
+      "size": 361
+    },
+    {
+      "path": "samples/m2m/user/input_state.json",
+      "size": 255
+    },
+    {
+      "path": "samples/m2m/user/message_state.json",
+      "size": 1121
+    },
+    {
+      "path": "samples/m2m/user/presence_state.json",
+      "size": 75
+    },
+    {
+      "path": "samples/m2m/user/queue_state.json",
+      "size": 123
+    },
+    {
+      "path": "samples/m2m/user/reconnect_state.json",
+      "size": 72
+    },
+    {
+      "path": "samples/m2m/user/recovery_state.json",
+      "size": 85
+    },
+    {
+      "path": "samples/m2m/user/session_state.json",
+      "size": 5083
+    },
+    {
+      "path": "samples/m2m/user/user_ui.html",
+      "size": 7349
+    },
+    {
+      "path": "samples/m2m/verify/verify_checklist.md",
+      "size": 350
+    },
+    {
+      "path": "scripts/__init__.py",
+      "size": 0
+    },
+    {
+      "path": "scripts/db_probe.py",
+      "size": 902
+    },
+    {
+      "path": "scripts/input_flow.py",
+      "size": 4759
+    },
+    {
+      "path": "scripts/package_build.py",
+      "size": 401
+    },
+    {
+      "path": "scripts/prepare_https_release.py",
+      "size": 1608
+    },
+    {
+      "path": "scripts/register_https_node.py",
+      "size": 988
+    },
+    {
+      "path": "scripts/run_krxa.py",
+      "size": 1442
+    },
+    {
+      "path": "scripts/run_m2m.py",
+      "size": 1407
+    },
+    {
+      "path": "scripts/state_engine.py",
+      "size": 7850
+    },
+    {
+      "path": "scripts/verify_local_build.py",
+      "size": 1151
+    }
+  ]
+}

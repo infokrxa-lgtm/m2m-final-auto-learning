@@ -1,0 +1,19 @@
+{
+  "schema": "KRXA_MEMORY_LOOP_V18",
+  "loop": [
+    "INPUT",
+    "PROCESS",
+    "STORE",
+    "REUSE",
+    "IMPROVE",
+    "INPUT"
+  ],
+  "files": [
+    "core/session_log.json",
+    "samples/m2m/user/message_state.json",
+    "samples/m2m/user/krxai_console_last.json",
+    "core/llm_call_log.json"
+  ],
+  "policy": "모든 중요한 입력과 결과는 재사용 가능한 형태로 기록한다.",
+  "updated_at": "2026-05-21T15:50:47.181710+00:00"
+}

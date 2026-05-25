@@ -1,0 +1,18 @@
+{
+  "schema": "KRXA_TOP_BUTTON_NEWWINDOW_POLICY_V31_8",
+  "principle": "CONTROL/HTS 상단 버튼은 새 브라우저 업무창을 열고, HTS 내부에서는 내부창도 병행 지원한다.",
+  "button_routes": {
+    "KRXAI": "/window/krxai",
+    "DB": "/window/db",
+    "MEMORY": "/window/memory",
+    "TASK": "/window/task",
+    "FILE": "/window/file",
+    "API LOG": "/window/apilog"
+  },
+  "api_aliases": [
+    "/api/autonomous/tick",
+    "/api/tasks/auto/tick",
+    "/api/files/reports"
+  ],
+  "updated_at": "2026-05-22T23:18:07.613033+00:00"
+}

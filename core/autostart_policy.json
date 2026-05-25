@@ -1,0 +1,12 @@
+{
+  "schema": "KRXA_AUTOSTART_POLICY_V18",
+  "enabled": true,
+  "startup_tasks": [
+    "ensure_room_state",
+    "ensure_file_exchange",
+    "ensure_llm_bridge_config",
+    "load_core_principles"
+  ],
+  "render_start_command": "python app.py",
+  "updated_at": "2026-05-21T15:50:47.181710+00:00"
+}

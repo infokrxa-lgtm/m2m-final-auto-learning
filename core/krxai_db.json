@@ -1,0 +1,148 @@
+{
+  "schema": "KRXAI_DB_AUTONOMOUS_V22",
+  "role": "intent_decision_memory_layer",
+  "description": "의도, 상태 판단, 응답 정책, 학습 루프 규칙을 담당한다. 언어 재료는 language_db에서 가져온다.",
+  "intents": {
+    "greeting": {
+      "priority": 10,
+      "patterns": [
+        "안녕",
+        "안녕하세요",
+        "hello",
+        "hi"
+      ],
+      "next_state": "ALIVE_HOME",
+      "response_policy": "acknowledge"
+    },
+    "thanks": {
+      "priority": 5,
+      "patterns": [
+        "고마워",
+        "감사",
+        "thank"
+      ],
+      "next_state": "ALIVE_HOME",
+      "response_policy": "acknowledge"
+    },
+    "m2m_message": {
+      "priority": 20,
+      "patterns": [
+        "*"
+      ],
+      "next_state": "TRANSLATE_SUCCESS",
+      "response_policy": "deliver"
+    }
+  },
+  "state_decision": {
+    "default_start": "INIT",
+    "success_path": [
+      "INIT",
+      "TERMS_ACCEPTED",
+      "APP_ACTIVATED",
+      "ALIVE_HOME",
+      "SECURITY_SELECTED",
+      "TRANSLATE_SUCCESS",
+      "QUEUE_JOINED",
+      "MATCH_FOUND",
+      "ROOM_CONNECTED"
+    ],
+    "recovery_path": [
+      "RECONNECTING",
+      "ROOM_RECOVERED"
+    ]
+  },
+  "confidence_rules": {
+    "min_intent_confidence": 0.55,
+    "fallback_intent": "m2m_message"
+  },
+  "memory_loop": {
+    "enabled": true,
+    "flow": [
+      "input",
+      "classify",
+      "db_lookup",
+      "execute_or_queue",
+      "store",
+      "reuse",
+      "improve"
+    ],
+    "write_targets": [
+      "core/session_log.json",
+      "core/krxai_autonomous_memory.json",
+      "core/krxai_task_queue.json"
+    ],
+    "recall_phrase": "KRXA RECALL CORE"
+  },
+  "version": "v1",
+  "identity": {
+    "name": "KRXAI",
+    "role": "KRXA 내부 자율 기억·판단·실행 DB",
+    "mission": "LLM 연결이 끊겨도 KRXA의 흐름, 기억, 신뢰, 자동 실행을 유지한다.",
+    "core_rule": "DB 우선, LLM 보조, 실패 시 fallback, 모든 결과 기록"
+  },
+  "autonomous_mode": {
+    "enabled": true,
+    "mode": "db_first_safe_autorun",
+    "llm_optional": true,
+    "offline_capable": true,
+    "max_steps_per_cycle": 3,
+    "cycle_policy": "one_task_at_a_time_with_trust_guard"
+  },
+  "execution_policy": {
+    "auto_execute_allowed": [
+      "db_lookup",
+      "status_report",
+      "queue整理",
+      "fallback_response",
+      "memory_write",
+      "trust_check"
+    ],
+    "manual_approval_required": [
+      "deploy",
+      "delete_file",
+      "overwrite_core",
+      "external_api_cost",
+      "security_change"
+    ],
+    "stop_conditions": [
+      "trust_guard_fail",
+      "unknown_high_risk_action",
+      "missing_required_secret",
+      "repeated_error_3x"
+    ]
+  },
+  "fallback_rules": {
+    "llm_unavailable": "KRXAI_DB와 language_DB 기반으로 응답하고, 필요한 작업을 task_queue에 저장한다.",
+    "api_key_invalid": "LLM을 OFF로 간주하고 CONTROL에 KEY 교체 필요를 표시한다.",
+    "unknown_intent": "질문을 clarify_required 상태로 저장하고 안전한 기본 안내를 반환한다.",
+    "file_error": "파일 작업을 중단하고 manifest와 session_log에 실패 사유를 기록한다."
+  },
+  "trust_guard": {
+    "enabled": true,
+    "principles": [
+      "추측 금지",
+      "실패 투명화",
+      "비밀값 노출 금지",
+      "고위험 실행 수동 승인",
+      "파일 기반 복구 가능성 유지"
+    ],
+    "collapse_prevention": "에러를 숨기지 말고 원인·대체흐름·복구지점을 함께 기록한다."
+  },
+  "recall_points": {
+    "root": "KRXA RECALL CORE",
+    "https": "https://krxa.onrender.com",
+    "control": "/control",
+    "krxai": "/krxai",
+    "files": "/files"
+  },
+  "updated_at": "2026-05-22T00:08:42.971256+00:00",
+  "core_memory_seed": {
+    "schema": "KRXAI_CORE_MEMORY_SEED_V26",
+    "loaded_from": "core/krxai_core_memory.json",
+    "recall_phrase": "KRXA RECALL CORE",
+    "main_flow": "INPUT → PROCESS → STORE → REUSE → IMPROVE → INPUT",
+    "target_flow": "KRXA_UI ↔ KRXAI ↔ [KRXAI_DB + language_DB] ↔ 필요 시 외부 LLM",
+    "external_llm_required": false,
+    "updated_at": "2026-05-22T11:01:10.152026+00:00"
+  }
+}

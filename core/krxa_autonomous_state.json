@@ -1,0 +1,10 @@
+{
+  "schema": "KRXA_AUTONOMOUS_STATE_V31_7",
+  "status": "READY",
+  "enabled": true,
+  "mode": "safe_tick",
+  "last_tick": null,
+  "tick_count": 0,
+  "runs": [],
+  "updated_at": "2026-05-22T23:04:39.355812+00:00"
+}

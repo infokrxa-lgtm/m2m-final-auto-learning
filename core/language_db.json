@@ -1,0 +1,86 @@
+{
+  "schema": "KRXA_LANGUAGE_DB_V1",
+  "role": "language_material_layer",
+  "description": "말/문장/번역/표현 데이터를 담당한다. 판단은 krxai_db가 담당한다.",
+  "languages": {
+    "ko": {
+      "name": "Korean",
+      "default_tone": "polite"
+    },
+    "en": {
+      "name": "English",
+      "default_tone": "neutral"
+    }
+  },
+  "phrases": [
+    {
+      "id": "ko.greeting.hello",
+      "lang": "ko",
+      "text": "안녕하세요",
+      "intent_hint": "greeting",
+      "tone": "polite",
+      "maps_to": [
+        "en.greeting.hello"
+      ]
+    },
+    {
+      "id": "en.greeting.hello",
+      "lang": "en",
+      "text": "Hello",
+      "intent_hint": "greeting",
+      "tone": "neutral",
+      "maps_to": [
+        "ko.greeting.hello"
+      ]
+    },
+    {
+      "id": "ko.thanks.basic",
+      "lang": "ko",
+      "text": "고마워",
+      "intent_hint": "thanks",
+      "tone": "casual",
+      "maps_to": [
+        "en.thanks.basic"
+      ]
+    },
+    {
+      "id": "en.thanks.basic",
+      "lang": "en",
+      "text": "Thank you",
+      "intent_hint": "thanks",
+      "tone": "neutral",
+      "maps_to": [
+        "ko.thanks.basic"
+      ]
+    }
+  ],
+  "translation_pairs": [
+    {
+      "source": "안녕하세요",
+      "source_lang": "ko",
+      "target": "Hello",
+      "target_lang": "en",
+      "confidence": 0.95
+    },
+    {
+      "source": "고마워",
+      "source_lang": "ko",
+      "target": "Thank you",
+      "target_lang": "en",
+      "confidence": 0.93
+    }
+  ],
+  "style_rules": {
+    "ko": {
+      "polite_suffix": [
+        "요",
+        "습니다"
+      ],
+      "casual_suffix": [
+        "어",
+        "야"
+      ]
+    }
+  },
+  "version": "v1"
+}

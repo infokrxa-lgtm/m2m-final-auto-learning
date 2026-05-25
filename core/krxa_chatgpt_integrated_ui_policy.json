@@ -1,0 +1,24 @@
+{
+  "schema": "KRXA_CHATGPT_INTEGRATED_OPERATING_UI_POLICY_V32",
+  "mode": "chat_command_to_operating_system",
+  "principle": "사용자는 ChatGPT처럼 말하고, KRXA는 intent→judgement→task→execution→memory→file→event 흐름으로 실행한다.",
+  "layout": {
+    "left": "말대말 CHAT",
+    "center": "KRXAI THINKING / EXECUTION",
+    "right": "REPORT / FILE / RESULT",
+    "bottom": "CONTROL / MEMORY / TASK / API LOG"
+  },
+  "flow": [
+    "CHAT_INPUT",
+    "INTENT_ROUTER",
+    "KRXAI_THINKING_ENGINE",
+    "TASK_CREATE",
+    "TRUST_GUARD_CHECK",
+    "AUTO_EXECUTION",
+    "MEMORY_SEED_SAVE",
+    "REPORT_FILE_EXPORT",
+    "REALTIME_EVENT",
+    "UI_UPDATE"
+  ],
+  "updated_at": "2026-05-23T00:28:10.286828+00:00"
+}

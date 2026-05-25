@@ -1,0 +1,16 @@
+{
+  "schema": "KRXA_REPORT_FILE_EXPORT_POLICY_V31_2",
+  "formats": [
+    "json",
+    "txt",
+    "docx",
+    "pdf"
+  ],
+  "path": "files/reports",
+  "filename_pattern": "report_{timestamp}.json",
+  "download_api": "/api/files/download/{filename}",
+  "file_exchange_manifest": "storage/file_exchange/file_manifest.json",
+  "memory_rule": "보고서 전문은 파일로 저장하고, memory에는 시발점 요약만 저장한다.",
+  "updated_at": "2026-05-22T14:38:31.452475+00:00",
+  "control_flow": "KRXAI_WINDOW report request -> /api/krxa/web/learning/run -> report export -> FILE_EXCHANGE"
+}

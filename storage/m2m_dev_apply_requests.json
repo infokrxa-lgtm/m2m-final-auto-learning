@@ -1,0 +1,19 @@
+{
+  "schema": "M2M_DEV_APPLY_REQUESTS_V33_5",
+  "items": [
+    {
+      "id": "m2m_req_20260525_021714_222702",
+      "title": "test",
+      "target": "user_ui",
+      "request_type": "ui_apply",
+      "content": "content",
+      "status": "pending_approval",
+      "created_by": "dev",
+      "approved_by": "",
+      "control_instruction": "",
+      "created_at": "2026-05-25T02:17:14.222727+00:00",
+      "updated_at": "2026-05-25T02:17:14.222731+00:00"
+    }
+  ],
+  "updated_at": "2026-05-25T02:17:14.222736+00:00"
+}

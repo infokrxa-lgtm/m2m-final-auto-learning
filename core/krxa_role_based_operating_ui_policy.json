@@ -1,0 +1,28 @@
+{
+  "schema": "KRXA_ROLE_BASED_OPERATING_UI_POLICY_V32_4",
+  "principle": "기존 KRXA 통합관제 흐름을 유지하면서 사용자용/관리자용/개발자용 UI와 역할별 실행 바를 추가한다.",
+  "routes": {
+    "user": [
+      "/user",
+      "/user/chat",
+      "/user/files"
+    ],
+    "admin": [
+      "/admin",
+      "/admin/tasks",
+      "/admin/reports",
+      "/admin/memory"
+    ],
+    "developer": [
+      "/dev",
+      "/dev/new",
+      "/dev/edit",
+      "/dev/patch",
+      "/dev/db",
+      "/dev/api",
+      "/dev/log",
+      "/dev/debug"
+    ]
+  },
+  "updated_at": "2026-05-23T02:26:55.405871+00:00"
+}

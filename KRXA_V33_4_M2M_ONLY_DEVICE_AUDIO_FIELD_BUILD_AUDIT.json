@@ -1,0 +1,27 @@
+{
+  "schema": "KRXA_V33_4_M2M_ONLY_DEVICE_AUDIO_FIELD_BUILD",
+  "started_at": "2026-05-25T01:06:02.307546+00:00",
+  "patches": [
+    {
+      "name": "add_v334_m2m_only_device_audio_helpers",
+      "detail": "user/control/dev/editor pages with mic/speaker auto detect"
+    },
+    {
+      "name": "add_v334_routes_priority",
+      "detail": "/user mapped to m2m-only user page; control/dev/editor routes added"
+    }
+  ],
+  "checks": [
+    {
+      "name": "py_compile_app_py",
+      "ok": true,
+      "detail": "OK"
+    },
+    {
+      "name": "runtime_m2m_only_device_audio",
+      "ok": true,
+      "detail": "OK_V33_4_M2M_ONLY_DEVICE_AUDIO_FIELD\n"
+    }
+  ],
+  "finished_at": "2026-05-25T01:06:03.507690+00:00"
+}

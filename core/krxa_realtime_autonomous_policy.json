@@ -1,0 +1,32 @@
+{
+  "schema": "KRXA_REALTIME_AUTONOMOUS_POLICY_V31_7",
+  "mode": "realtime_event_bus_plus_safe_autonomous_tick",
+  "principle": "KRXA는 실시간 상태 이벤트를 유지하고, 자동 실행은 안전 정책과 승인 기준 안에서만 수행한다.",
+  "websocket": {
+    "preferred": true,
+    "fallback": "polling",
+    "event_stream_api": "/api/realtime/events",
+    "status_api": "/api/realtime/status"
+  },
+  "autonomous_loop": {
+    "enabled": true,
+    "mode": "safe_tick",
+    "unlimited_loop": false,
+    "requires_trust_guard": true,
+    "manual_tick_api": "/api/autonomous/tick",
+    "state_api": "/api/autonomous/status"
+  },
+  "events": [
+    "KRXAI_RUN",
+    "DB_SAVE",
+    "MEMORY_ADD",
+    "MEMORY_DELETE",
+    "TASK_ADD",
+    "TASK_EXECUTE",
+    "FILE_CREATE",
+    "FILE_DELETE",
+    "REPORT_EXPORT",
+    "ERROR"
+  ],
+  "updated_at": "2026-05-22T23:04:39.355055+00:00"
+}

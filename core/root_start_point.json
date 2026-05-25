@@ -1,0 +1,11 @@
+{
+  "schema": "KRXA_ROOT_START_POINT_V24",
+  "recall": "KRXA RECALL CORE",
+  "flow": [
+    "LOAD_CORE_STRUCTURE",
+    "LOAD_MEMORY_LOOP",
+    "LOAD_STORAGE_INDEX",
+    "INITIALIZE_EXECUTION_FLOW",
+    "RESUME_FROM_ROOT_STATE"
+  ]
+}

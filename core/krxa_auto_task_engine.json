@@ -1,0 +1,19 @@
+{
+  "schema": "KRXA_AUTO_TASK_EXECUTION_ENGINE_V31",
+  "mode": "tick_based_user_scoped",
+  "principle": "사용자 입력 없이도 task_queue를 조회하고 실행 가능한 작업을 수행하되, 위험 작업은 승인 대기한다.",
+  "tick_policy": {
+    "manual_tick_endpoint": "/api/tasks/auto/tick",
+    "background_loop_enabled": false,
+    "reason": "Render free 환경과 안전성 때문에 기본은 수동 tick. 필요 시 cron/provider 연결 가능."
+  },
+  "task_flow": [
+    "QUEUE_READ",
+    "ELIGIBLE_SELECT",
+    "EXECUTE",
+    "MEMORY_STORE",
+    "FILE_EXPORT_IF_REPORT",
+    "STATUS_UPDATE"
+  ],
+  "updated_at": "2026-05-22T13:56:59.717224+00:00"
+}

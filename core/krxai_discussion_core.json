@@ -1,0 +1,17 @@
+{
+  "schema": "KRXAI_DISCUSSION_CORE_V23",
+  "flow": "KRXA_UI <=> KRXAI <=> [KRXAI_DB + language_DB] <=> LLM only when needed",
+  "principles": {
+    "db_first": true,
+    "llm_optional": true,
+    "memory_required": true,
+    "trust_guard_required": true,
+    "ui_control_center": true
+  },
+  "routes": {
+    "status": "/api/krxai/discussion/status",
+    "discuss": "/api/krxai/discussion",
+    "autonomous_status": "/api/krxai/autonomous/status",
+    "autonomous_run": "/api/krxai/autonomous/run"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "schema": "KRXA_V33_5_M2M_NATURAL_VOICE_REAL_CONTROL_UI_APPLY",
+  "started_at": "2026-05-25T02:17:07.462212+00:00",
+  "patches": [
+    {
+      "name": "add_v335_helpers",
+      "detail": "natural voice, real control, dev apply approval"
+    },
+    {
+      "name": "add_v335_get_routes",
+      "detail": ""
+    },
+    {
+      "name": "add_v335_post_routes",
+      "detail": ""
+    }
+  ],
+  "checks": [
+    {
+      "name": "py_compile_app_py",
+      "ok": true,
+      "detail": "OK"
+    },
+    {
+      "name": "runtime_v335_features",
+      "ok": true,
+      "detail": "OK_V33_5\nSpreadsheet runtime warmup failed during python startup\nTraceback (most recent call last):\n  File \"/tmp/tmp.9eeVjt35CN/artifact_tool_v2-2.7.5/artifact_tool/patches/warm_spreadsheet_runtime_on_startup.py\", line 26, in warm_spreadsheet_runtime_on_startup\n  File \"/tmp/tmp.9eeVjt35CN/artifact_tool_v2-2.7.5/artifact_tool/spreadsheet_warmup.py\", line 785, in warm_spreadsheet_runtime\n  File \"/tmp/tmp.9eeVjt35CN/artifact_tool_v2-2.7.5/artifact_tool/spreadsheet_warmup.py\", line 720, in _warm_feature_flows\n  File \"/tmp/tmp.9eeVjt35CN/artifact_tool_v2-2.7.5/artifact_tool/spreadsheet_warmup.py\", line 704, in _warm_collaboration_flows\n  File \"/tmp/tmp.9eeVjt35CN/artifact_tool_v2-2.7.5/artifact_tool/generated/interface/models.py\", line 48821, in hydrate_crdt_from_proto\n  File \"/tmp/tmp.9eeVjt35CN/artifact_tool_v2-2.7.5/artifact_tool/rpc/remote.py\", line 747, in __call__\n  File \"/tmp/tmp.9eeVjt35CN/artifact_tool_v2-2.7.5/artifact_tool/rpc/client.py\", line 150, in call\nartifact_tool.rpc.client.RemoteError: hydrateCrdtFromProto requires an empty collaborative document.\n"
+    }
+  ],
+  "finished_at": "2026-05-25T02:17:14.412125+00:00"
+}

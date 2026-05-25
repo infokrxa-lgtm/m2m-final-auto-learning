@@ -1,0 +1,145 @@
+{
+  "started_at": "2026-05-23T07:03:34.864447+00:00",
+  "patches": [
+    {
+      "name": "targeted_replace",
+      "detail": "z-index:8}.llmbar"
+    },
+    {
+      "name": "targeted_replace",
+      "detail": "12px}.llmbar"
+    },
+    {
+      "name": "targeted_replace",
+      "detail": "#fca5a5}.llmbar"
+    },
+    {
+      "name": "targeted_replace",
+      "detail": "#86efac}</style>"
+    },
+    {
+      "name": "targeted_replace",
+      "detail": "if(body) opt.body=JSON.stringify(body);"
+    },
+    {
+      "name": "requirements_openai",
+      "detail": ""
+    }
+  ],
+  "checks": [
+    {
+      "name": "python_compile_app_py",
+      "ok": true,
+      "detail": "OK"
+    },
+    {
+      "name": "required_symbol",
+      "ok": true,
+      "detail": "def krxa_v326_real_control_center_html"
+    },
+    {
+      "name": "required_symbol",
+      "ok": true,
+      "detail": "def krxa_v329_llm_control_status"
+    },
+    {
+      "name": "required_symbol",
+      "ok": true,
+      "detail": "def krxa_v329_set_llm_control_mode"
+    },
+    {
+      "name": "required_symbol",
+      "ok": true,
+      "detail": "clean_path.startswith('/api/llm/control/status')"
+    },
+    {
+      "name": "required_symbol",
+      "ok": true,
+      "detail": "clean_path.startswith('/api/llm/control/mode')"
+    },
+    {
+      "name": "required_symbol",
+      "ok": true,
+      "detail": "KRXAI ↔ LLM CONTROL"
+    },
+    {
+      "name": "no_display_placeholder",
+      "ok": true,
+      "detail": "no {display}"
+    },
+    {
+      "name": "no_triple_brace",
+      "ok": false,
+      "detail": "no triple braces"
+    },
+    {
+      "name": "import_and_render_user_html",
+      "ok": true,
+      "detail": "OK_RENDER_USER 12889\nKRXA_LLM_CONTROL_BAR_STATUS_V32_9\nSpreadsheet runtime warmup failed during python startup\nTraceback (most recent call last):\n  File \"/tmp/tmp.9eeVjt35CN/artifact_tool_v2-2.7.5/artifact_tool/patches/warm_spreadsheet_runtime_on_startup.py\", line 26, in warm_spreadsheet_runtime_on_startup\n  File \"/tmp/tmp.9eeVjt35CN/artifact_tool_v2-2.7.5/artifact_tool/spreadsheet_warmup.py\", line 785, in warm_spreadsheet_runtime\n  File \"/tmp/tmp.9eeVjt35CN/artifact_tool_v2-2.7.5/artifact_tool/spreadsheet_warmup.py\", line 720, in _warm_feature_flows\n  File \"/tmp/tmp.9eeVjt35CN/artifact_tool_v2-2.7.5/artifact_tool/spreadsheet_warmup.py\", line 704, in _warm_collaboration_flows\n  File \"/tmp/tmp.9eeVjt35CN/artifact_tool_v2-2.7.5/artifact_tool/generated/interface/models.py\", line 48821, in hydrate_crdt_from_proto\n  File \"/tmp/tmp.9eeVjt35CN/artifact_tool_v2-2.7.5/artifact_tool/rpc/remote.py\", line 747, in __call__\n  File \"/tmp/tmp.9eeVjt35CN/artifact_tool_v2-2.7.5/artifact_tool/rpc/client.py\", line 150, in call\nartifact_tool.rpc.client.RemoteError: hydrateCrdtFromProto requires an empty collaborative document.\n"
+    },
+    {
+      "name": "render_user_admin_dev",
+      "ok": true,
+      "detail": "user 12889\nadmin 13042\ndev 13406\nSpreadsheet runtime warmup failed during python startup\nTraceback (most recent call last):\n  File \"/tmp/tmp.9eeVjt35CN/artifact_tool_v2-2.7.5/artifact_tool/patches/warm_spreadsheet_runtime_on_startup.py\", line 26, in warm_spreadsheet_runtime_on_startup\n  File \"/tmp/tmp.9eeVjt35CN/artifact_tool_v2-2.7.5/artifact_tool/spreadsheet_warmup.py\", line 785, in warm_spreadsheet_runtime\n  File \"/tmp/tmp.9eeVjt35CN/artifact_tool_v2-2.7.5/artifact_tool/spreadsheet_warmup.py\", line 720, in _warm_feature_flows\n  File \"/tmp/tmp.9eeVjt35CN/artifact_tool_v2-2.7.5/artifact_tool/spreadsheet_warmup.py\", line 704, in _warm_collaboration_flows\n  File \"/tmp/tmp.9eeVjt35CN/artifact_tool_v2-2.7.5/artifact_tool/generated/interface/models.py\", line 48821, in hydrate_crdt_from_proto\n  File \"/tmp/tmp.9eeVjt35CN/artifact_tool_v2-2.7.5/artifact_tool/rpc/remote.py\", line 747, in __call__\n  File \"/tmp/tmp.9eeVjt35CN/artifact_tool_v2-2.7.5/artifact_tool/rpc/client.py\", line 150, in call\nartifact_tool.rpc.client.RemoteError: hydrateCrdtFromProto requires an empty collaborative document.\n"
+    },
+    {
+      "name": "final_compile_after_triple_review",
+      "ok": true,
+      "detail": "py_compile + user/admin/dev render OK"
+    }
+  ],
+  "warnings": [],
+  "finished_at": "2026-05-23T07:04:45.256191+00:00",
+  "triple_brace_review": [
+    {
+      "pattern": "}}}",
+      "offset": 76744,
+      "context": "t>\nasync function api(path, method='GET', body=null) {{\n  const opt={{method,headers:{{'Content-Type':'application/json'}}}};\n  if(body) opt.body=JSON.stringify(body);\n  const r=await fetch(path,opt); const t=await r.text();\n  document.getElem"
+    },
+    {
+      "pattern": "}}}",
+      "offset": 83051,
+      "context": "n'}},...opt}});\n  const t=await r.text();\n  try{{return JSON.parse(t)}}catch(e){{return {{ok:false,status:r.status,raw:t}}}}\n}}\nfunction out(x){{document.getElementById('out').textContent=JSON.stringify(x,null,2);}}\nasync function refresh(){{\n"
+    },
+    {
+      "pattern": "}}}",
+      "offset": 84562,
+      "context": "api/memory/add',{{method:'POST',body:JSON.stringify({{user_id:'default',entry:{{input:text,final:text,role:'user_memory'}}}})}})); loadMemory(); return;}}\n}}\nasync function loadDB(){{const db=document.getElementById('dbSelect')?.value||'krxai_"
+    },
+    {
+      "pattern": "}}}",
+      "offset": 87365,
+      "context": "m('삭제 '+n+' ?')){{out(await api('/api/files/delete',{{method:'POST',body:JSON.stringify({{filename:n}})}}));loadFiles();}}}}\nasync function loadLog(){{out(await api('/api/apilog'));}}\nwindow.onload=refresh;\n</script></head><body>\n<header><b>KR"
+    },
+    {
+      "pattern": "}}}",
+      "offset": 92615,
+      "context": "cation/json'},...opt}); const t=await r.text(); try{return JSON.parse(t)}catch(e){return {ok:false,status:r.status,raw:t}}}\nfunction saveLayout(){const layout={}; document.querySelectorAll('.win').forEach(w=>layout[w.dataset.name]=[w.offsetLef"
+    },
+    {
+      "pattern": "}}}",
+      "offset": 92973,
+      "context": "(layout));}\nfunction loadLayout(){try{return JSON.parse(localStorage.getItem('krxa_hts_layout')||'{}')}catch(e){return {}}}\nfunction openWin(name){let w=document.getElementById('win_'+name); if(w){w.style.display='block'; w.style.zIndex=++z; s"
+    },
+    {
+      "pattern": "}}}",
+      "offset": 106365,
+      "context": "ype':'application/json'},...opt});const t=await r.text();try{return JSON.parse(t)}catch(e){return {raw:t,status:r.status}}}\nasync function realtimeStatus(){\n const d=await rtApi('/api/realtime/status');\n const el=document.getElementById('rtbar"
+    },
+    {
+      "pattern": "}}}",
+      "offset": 116099,
+      "context": "lication/json'},...opt});const t=await r.text();try{return JSON.parse(t)}catch(e){return {ok:false,status:r.status,raw:t}}}\nfunction set(id,x){document.getElementById(id).textContent=typeof x==='string'?x:JSON.stringify(x,null,2)}\nfunction add"
+    },
+    {
+      "pattern": "}}}",
+      "offset": 127286,
+      "context": "lication/json'},...opt});const t=await r.text();try{return JSON.parse(t)}catch(e){return {ok:false,status:r.status,raw:t}}}\nfunction out(id,x){document.getElementById(id).textContent=typeof x==='string'?x:JSON.stringify(x,null,2)}\nfunction msg"
+    },
+    {
+      "pattern": "}}}",
+      "offset": 136256,
+      "context": "on/json'}},...opt}});const t=await r.text();try{{return JSON.parse(t)}}catch(e){{return {{ok:false,status:r.status,raw:t}}}}}}\nfunction out(id,x){{let e=document.getElementById(id); if(e)e.textContent=typeof x==='string'?x:JSON.stringify(x,nul"
+    }
+  ]
+}

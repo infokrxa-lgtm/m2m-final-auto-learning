@@ -1,0 +1,30 @@
+{
+  "schema": "KRXA_LLM_FORCE_AUTO_MODE_POLICY_V32_8",
+  "principle": "KRXA는 LLM OFF/AUTO/FORCE 세 모드를 제공한다. OFF는 외부 호출 금지, AUTO는 내부 판단 우선 조건부 호출, FORCE는 검증/중요 비교용 강제 호출이다.",
+  "modes": {
+    "off": {
+      "llm_enabled": false,
+      "force_llm": false,
+      "description": "외부 ChatGPT API 호출 금지. 내부 KRXAI_DB + 언어DB + MEMORY만 사용."
+    },
+    "auto": {
+      "llm_enabled": true,
+      "force_llm": false,
+      "description": "내부 판단 우선. 필요할 때만 ChatGPT API 호출."
+    },
+    "force": {
+      "llm_enabled": true,
+      "force_llm": true,
+      "description": "요청마다 ChatGPT API를 강제 호출. 연결 검증/비교 분석/중요 보고서용."
+    }
+  },
+  "response_fields": [
+    "llm_mode",
+    "llm_enabled",
+    "force_llm",
+    "llm_used",
+    "llm_reason",
+    "llm_output"
+  ],
+  "updated_at": "2026-05-23T04:33:47.041219+00:00"
+}

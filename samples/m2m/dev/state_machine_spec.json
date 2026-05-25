@@ -1,0 +1,18 @@
+{
+  "name": "KRXA_M2M_USER_STATE_MACHINE",
+  "states": [
+    "INIT",
+    "TERMS_ACCEPTED",
+    "APP_ACTIVATED",
+    "ALIVE_HOME",
+    "SECURITY_SELECTED",
+    "TRANSLATE_SUCCESS",
+    "QUEUE_JOINED",
+    "MATCH_FOUND",
+    "ROOM_CONNECTED",
+    "RECONNECTING",
+    "ROOM_RECOVERED"
+  ],
+  "fail_policy": "log_and_recover",
+  "recovery_target": "last_valid_state"
+}

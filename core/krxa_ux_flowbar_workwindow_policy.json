@@ -1,0 +1,35 @@
+{
+  "schema": "KRXA_UX_FLOWBAR_WORKWINDOW_POLICY_V32_5",
+  "principle": "기존 KRXA 통합관제 흐름을 유지하면서 상태 흐름 바, 클릭 새 작업창, USER→ADMIN TASK 연결 체감을 강화한다.",
+  "flow_bar": [
+    "CHAT",
+    "TASK",
+    "ENGINE",
+    "MEMORY",
+    "FILE"
+  ],
+  "role_windows": {
+    "user": [
+      "/user/chat",
+      "/user/files",
+      "/user/status"
+    ],
+    "admin": [
+      "/admin/tasks",
+      "/admin/reports",
+      "/admin/memory",
+      "/admin/approval",
+      "/admin/result"
+    ],
+    "developer": [
+      "/dev/new",
+      "/dev/edit",
+      "/dev/patch",
+      "/dev/db",
+      "/dev/api",
+      "/dev/log",
+      "/dev/debug"
+    ]
+  },
+  "updated_at": "2026-05-23T02:56:11.812722+00:00"
+}

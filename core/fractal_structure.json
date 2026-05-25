@@ -1,0 +1,12 @@
+{
+  "schema": "KRXA_FRACTAL_STRUCTURE_V18",
+  "root_pattern": "input -> process -> store -> reuse -> improve -> input",
+  "levels": {
+    "system": "KRXA 전체",
+    "control": "통합관제 UI",
+    "module": "파일/DB/LLM/USER/FLOW",
+    "record": "각 JSON 상태 단위"
+  },
+  "rule": "상위 구조의 흐름을 하위 모듈에서도 동일하게 유지한다.",
+  "updated_at": "2026-05-21T15:50:47.181710+00:00"
+}

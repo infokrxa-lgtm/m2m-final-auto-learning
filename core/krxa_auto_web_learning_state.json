@@ -1,0 +1,8 @@
+{
+  "schema": "KRXA_AUTO_WEB_LEARNING_LOOP_STATE_V30",
+  "status": "READY",
+  "scope": "user_request_only",
+  "runs": [],
+  "pending_approvals": [],
+  "updated_at": "2026-05-22T13:13:57.379081+00:00"
+}

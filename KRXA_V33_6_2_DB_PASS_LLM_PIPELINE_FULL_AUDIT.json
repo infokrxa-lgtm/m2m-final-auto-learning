@@ -1,0 +1,31 @@
+{
+  "schema": "KRXA_V33_6_2_DB_PASS_LLM_PIPELINE_FULL",
+  "started_at": "2026-05-25T05:16:45.508078+00:00",
+  "patches": [
+    {
+      "name": "add_v3362_db_pass_llm_pipeline_guard",
+      "detail": ""
+    },
+    {
+      "name": "add_v3362_explicit_api",
+      "detail": ""
+    },
+    {
+      "name": "force_chat_run_through_v3362",
+      "detail": ""
+    }
+  ],
+  "checks": [
+    {
+      "name": "py_compile_app_py",
+      "ok": true,
+      "detail": "OK"
+    },
+    {
+      "name": "runtime_v3362_router",
+      "ok": true,
+      "detail": "OK_V33_6_2\n"
+    }
+  ],
+  "finished_at": "2026-05-25T05:16:47.633095+00:00"
+}

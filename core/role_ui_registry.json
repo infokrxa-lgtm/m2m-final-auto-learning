@@ -1,0 +1,15 @@
+{
+  "schema": "KRXA_ROLE_UI_REGISTRY_V24",
+  "roles": {
+    "admin": "/admin",
+    "dev": "/dev",
+    "user": "/user",
+    "room": "/room",
+    "krxai": "/krxai",
+    "memory": "/memory",
+    "tasks": "/tasks",
+    "trust": "/trust",
+    "db": "/db",
+    "files": "/files"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "queue_state": "MATCHED",
+  "users_waiting": [
+    "user_A"
+  ],
+  "match_found": true,
+  "room_id": "room_input_001"
+}

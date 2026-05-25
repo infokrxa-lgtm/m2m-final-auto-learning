@@ -1,0 +1,23 @@
+{
+  "schema": "KRXA_HTS_MULTIWINDOW_WORKSPACE_POLICY_V31_6",
+  "mode": "hts_style_multiwindow_realtime_ui",
+  "principle": "KRXA는 CONTROL 내부에서 여러 업무창을 HTS처럼 띄우고, 드래그/최소화/새로고침/실행/로그 추적을 지원한다.",
+  "features": [
+    "internal_desktop",
+    "draggable_windows",
+    "resizable_panels",
+    "window_minimize_restore",
+    "realtime_status_polling",
+    "workspace_state_save",
+    "module_specific_actions"
+  ],
+  "windows": [
+    "krxai",
+    "db",
+    "memory",
+    "task",
+    "file",
+    "apilog"
+  ],
+  "updated_at": "2026-05-22T22:39:13.081197+00:00"
+}

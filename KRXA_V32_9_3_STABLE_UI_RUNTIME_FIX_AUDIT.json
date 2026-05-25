@@ -1,0 +1,68 @@
+{
+  "schema": "KRXA_V32_9_3_STABLE_UI_RUNTIME_FIX_AUDIT",
+  "started_at": "2026-05-23T07:18:34.445999+00:00",
+  "base": "KRXA_LOCAL_BUILD_v32_9_2_FULL_AUDIT_STABLE_FIX.zip",
+  "patches": [
+    {
+      "name": "normalize_llmbar_css",
+      "detail": "top 88px, flex-wrap, escaped braces"
+    },
+    {
+      "name": "replace_llm_control_js_safe",
+      "detail": "DOM-safe status/mode functions"
+    }
+  ],
+  "checks": [
+    {
+      "name": "py_compile_app_py",
+      "ok": true,
+      "detail": "OK"
+    },
+    {
+      "name": "runtime_import_render_roles_status",
+      "ok": true,
+      "detail": "ROLE_OK user 13261\nROLE_OK admin 13414\nROLE_OK dev 13778\nSTATUS_OK off MISSING\nSpreadsheet runtime warmup failed during python startup\nTraceback (most recent call last):\n  File \"/tmp/tmp.9eeVjt35CN/artifact_tool_v2-2.7.5/artifact_tool/patches/warm_spreadsheet_runtime_on_startup.py\", line 26, in warm_spreadsheet_runtime_on_startup\n  File \"/tmp/tmp.9eeVjt35CN/artifact_tool_v2-2.7.5/artifact_tool/spreadsheet_warmup.py\", line 785, in warm_spreadsheet_runtime\n  File \"/tmp/tmp.9eeVjt35CN/artifact_tool_v2-2.7.5/artifact_tool/spreadsheet_warmup.py\", line 720, in _warm_feature_flows\n  File \"/tmp/tmp.9eeVjt35CN/artifact_tool_v2-2.7.5/artifact_tool/spreadsheet_warmup.py\", line 704, in _warm_collaboration_flows\n  File \"/tmp/tmp.9eeVjt35CN/artifact_tool_v2-2.7.5/artifact_tool/generated/interface/models.py\", line 48821, in hydrate_crdt_from_proto\n  File \"/tmp/tmp.9eeVjt35CN/artifact_tool_v2-2.7.5/artifact_tool/rpc/remote.py\", line 747, in __call__\n  File \"/tmp/tmp.9eeVjt35CN/artifact_tool_v2-2.7.5/artifact_tool/rpc/client.py\", line 150, in call\nartifact_tool.rpc.client.RemoteError: hydrateCrdtFromProto requires an empty collaborative document.\n"
+    },
+    {
+      "name": "symbol:def krxa_v326_real_control_center_html",
+      "ok": true,
+      "detail": "def krxa_v326_real_control_center_html"
+    },
+    {
+      "name": "symbol:def krxa_v329_llm_control_status",
+      "ok": true,
+      "detail": "def krxa_v329_llm_control_status"
+    },
+    {
+      "name": "symbol:def krxa_v329_set_llm_control_mode",
+      "ok": true,
+      "detail": "def krxa_v329_set_llm_control_mode"
+    },
+    {
+      "name": "symbol:clean_path.startswith('/api/llm/control/statu",
+      "ok": true,
+      "detail": "clean_path.startswith('/api/llm/control/status')"
+    },
+    {
+      "name": "symbol:clean_path.startswith('/api/llm/control/mode'",
+      "ok": true,
+      "detail": "clean_path.startswith('/api/llm/control/mode')"
+    },
+    {
+      "name": "symbol:KRXAI ↔ LLM CONTROL",
+      "ok": true,
+      "detail": "KRXAI ↔ LLM CONTROL"
+    },
+    {
+      "name": "symbol:async function llmControlStatus",
+      "ok": true,
+      "detail": "async function llmControlStatus"
+    },
+    {
+      "name": "no_unresolved_display_placeholder",
+      "ok": true,
+      "detail": "display placeholder scan"
+    }
+  ],
+  "finished_at": "2026-05-23T07:18:47.537082+00:00"
+}

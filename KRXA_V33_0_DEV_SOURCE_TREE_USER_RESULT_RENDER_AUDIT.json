@@ -1,0 +1,43 @@
+{
+  "schema": "KRXA_V33_0_DEV_SOURCE_TREE_USER_RESULT_RENDER",
+  "started_at": "2026-05-23T17:57:27.673283+00:00",
+  "patches": [
+    {
+      "name": "add_v330_dev_source_helpers",
+      "detail": ""
+    },
+    {
+      "name": "add_dev_source_get_routes",
+      "detail": ""
+    },
+    {
+      "name": "add_dev_source_post_route",
+      "detail": ""
+    },
+    {
+      "name": "dev_edit_button_to_source_editor",
+      "detail": ""
+    },
+    {
+      "name": "user_result_render_runChat",
+      "detail": ""
+    },
+    {
+      "name": "user_result_render_makeReport",
+      "detail": ""
+    }
+  ],
+  "checks": [
+    {
+      "name": "py_compile_app_py",
+      "ok": true,
+      "detail": "OK"
+    },
+    {
+      "name": "runtime_dev_tree_and_user_render",
+      "ok": true,
+      "detail": "OK_V33_DEV_TREE_RESULT_RENDER\nSpreadsheet runtime warmup failed during python startup\nTraceback (most recent call last):\n  File \"/tmp/tmp.9eeVjt35CN/artifact_tool_v2-2.7.5/artifact_tool/patches/warm_spreadsheet_runtime_on_startup.py\", line 26, in warm_spreadsheet_runtime_on_startup\n  File \"/tmp/tmp.9eeVjt35CN/artifact_tool_v2-2.7.5/artifact_tool/spreadsheet_warmup.py\", line 785, in warm_spreadsheet_runtime\n  File \"/tmp/tmp.9eeVjt35CN/artifact_tool_v2-2.7.5/artifact_tool/spreadsheet_warmup.py\", line 720, in _warm_feature_flows\n  File \"/tmp/tmp.9eeVjt35CN/artifact_tool_v2-2.7.5/artifact_tool/spreadsheet_warmup.py\", line 704, in _warm_collaboration_flows\n  File \"/tmp/tmp.9eeVjt35CN/artifact_tool_v2-2.7.5/artifact_tool/generated/interface/models.py\", line 48821, in hydrate_crdt_from_proto\n  File \"/tmp/tmp.9eeVjt35CN/artifact_tool_v2-2.7.5/artifact_tool/rpc/remote.py\", line 747, in __call__\n  File \"/tmp/tmp.9eeVjt35CN/artifact_tool_v2-2.7.5/artifact_tool/rpc/client.py\", line 150, in call\nartifact_tool.rpc.client.RemoteError: hydrateCrdtFromProto requires an empty collaborative document.\n"
+    }
+  ],
+  "finished_at": "2026-05-23T17:57:36.426224+00:00"
+}

@@ -1,0 +1,20 @@
+{
+  "schema": "KRXAI_AUTORUN_POLICY_V22",
+  "enabled": true,
+  "mode": "manual_triggered_autonomous_cycle",
+  "note": "Render 무료 환경에서 백그라운드 상시 루프 대신 /api/krxai/autonomous/run 호출 시 1회 안전 사이클 실행",
+  "allowed_without_llm": [
+    "status_report",
+    "task_queue_next",
+    "memory_append",
+    "trust_guard_check",
+    "fallback_response"
+  ],
+  "requires_manual_approval": [
+    "deploy",
+    "delete",
+    "overwrite",
+    "paid_llm_call_bulk"
+  ],
+  "updated_at": "2026-05-22T00:08:42.972561+00:00"
+}

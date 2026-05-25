@@ -1,0 +1,35 @@
+{
+  "schema": "KRXA_V33_6_3_1_NATURAL_FLOW_AUTO_FREE_START",
+  "started_at": "2026-05-25T08:00:12.480900+00:00",
+  "patches": [
+    {
+      "name": "add_auto_free_start_helper",
+      "detail": ""
+    },
+    {
+      "name": "patch_chat_run_use_auto_free_proxy",
+      "detail": ""
+    },
+    {
+      "name": "add_auto_free_proxy_api",
+      "detail": ""
+    },
+    {
+      "name": "update_ui_labels_v33631",
+      "detail": ""
+    }
+  ],
+  "checks": [
+    {
+      "name": "py_compile_app_py",
+      "ok": true,
+      "detail": "OK"
+    },
+    {
+      "name": "runtime_v33631_auto_free",
+      "ok": true,
+      "detail": "OK_V33_6_3_1_AUTO_FREE\nSpreadsheet runtime warmup failed during python startup\nTraceback (most recent call last):\n  File \"/tmp/tmp.9eeVjt35CN/artifact_tool_v2-2.7.5/artifact_tool/patches/warm_spreadsheet_runtime_on_startup.py\", line 26, in warm_spreadsheet_runtime_on_startup\n  File \"/tmp/tmp.9eeVjt35CN/artifact_tool_v2-2.7.5/artifact_tool/spreadsheet_warmup.py\", line 785, in warm_spreadsheet_runtime\n  File \"/tmp/tmp.9eeVjt35CN/artifact_tool_v2-2.7.5/artifact_tool/spreadsheet_warmup.py\", line 720, in _warm_feature_flows\n  File \"/tmp/tmp.9eeVjt35CN/artifact_tool_v2-2.7.5/artifact_tool/spreadsheet_warmup.py\", line 704, in _warm_collaboration_flows\n  File \"/tmp/tmp.9eeVjt35CN/artifact_tool_v2-2.7.5/artifact_tool/generated/interface/models.py\", line 48821, in hydrate_crdt_from_proto\n  File \"/tmp/tmp.9eeVjt35CN/artifact_tool_v2-2.7.5/artifact_tool/rpc/remote.py\", line 747, in __call__\n  File \"/tmp/tmp.9eeVjt35CN/artifact_tool_v2-2.7.5/artifact_tool/rpc/client.py\", line 150, in call\nartifact_tool.rpc.client.RemoteError: hydrateCrdtFromProto requires an empty collaborative document.\n"
+    }
+  ],
+  "finished_at": "2026-05-25T08:00:18.762030+00:00"
+}

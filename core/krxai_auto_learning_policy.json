@@ -1,0 +1,28 @@
+{
+  "schema": "KRXAI_AUTO_LEARNING_POLICY_V28",
+  "purpose": "모든 입력과 판단 결과를 기억 후보로 저장하고, 반복되는 개념은 성격/판단 기준으로 승격한다.",
+  "stages": [
+    "capture_input",
+    "classify_intent",
+    "compare_root",
+    "reuse_memory",
+    "produce_structured_response",
+    "store_learning_item",
+    "promote_repeated_pattern"
+  ],
+  "promotion_rules": {
+    "min_repeat_count": 3,
+    "promote_to": "core_memory_candidate",
+    "requires_trust_guard": true
+  },
+  "learning_item_schema": {
+    "input": "사용자 입력",
+    "intent": "분류된 의도",
+    "reason": "판단 근거",
+    "final": "최종 응답",
+    "tags": [],
+    "repeat_count": 1,
+    "promoted": false
+  },
+  "updated_at": "2026-05-22T12:20:38.060614+00:00"
+}

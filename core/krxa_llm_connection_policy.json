@@ -1,0 +1,14 @@
+{
+  "schema": "KRXA_LLM_CONNECTION_POLICY_V32_7",
+  "absolute_rule": "LLM 연결은 항상 ON/OFF 제어 대상이며, 사용자가 끄면 외부 ChatGPT API 호출을 하지 않는다.",
+  "decision_order": [
+    "ROOT_LOAD",
+    "LLM_CONFIG_CHECK",
+    "MEMORY_RETRIEVE",
+    "LANGUAGE_DB_CHECK",
+    "INTERNAL_JUDGEMENT",
+    "OPTIONAL_LLM_CALL_ONLY_IF_ENABLED",
+    "TASK_MEMORY_FILE_UPDATE"
+  ],
+  "updated_at": "2026-05-23T03:57:05.041156+00:00"
+}

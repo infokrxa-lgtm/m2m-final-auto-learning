@@ -1,0 +1,52 @@
+{
+  "schema": "krxa.storage_index.v2",
+  "root": "local_pc",
+  "principle": "local_build_first_external_https_second",
+  "nodes": {
+    "local_pc": {
+      "type": "local",
+      "role": "authoritative_working_root",
+      "path": "./"
+    },
+    "https_release": {
+      "type": "https",
+      "role": "portable_release_node",
+      "url": "PASTE_HTTPS_URL_HERE",
+      "status": "prepared",
+      "artifact": "build/KRXA_RELEASE.zip"
+    },
+    "google_drive": {
+      "type": "cloud_https",
+      "role": "backup_distribution_node",
+      "url": "PASTE_GOOGLE_DRIVE_SHARE_URL_HERE",
+      "status": "optional"
+    },
+    "github_release": {
+      "type": "git_https",
+      "role": "versioned_release_node",
+      "url": "PASTE_GITHUB_RELEASE_URL_HERE",
+      "status": "optional"
+    }
+  },
+  "recall": {
+    "command": "KRXA RECALL CORE",
+    "load": [
+      "core/control_state.json",
+      "core/session_log.json",
+      "core/language_base.json",
+      "core/storage_index.json"
+    ]
+  },
+  "storage": {
+    "external_nodes": {
+      "github_pages": {
+        "type": "https_pages",
+        "role": "ui_execution_node",
+        "root_url": "https://infokrxa-lgtm.github.io/KRXA/",
+        "user_ui": "https://infokrxa-lgtm.github.io/KRXA/samples/m2m/user/user_ui.html",
+        "control_ui": "https://infokrxa-lgtm.github.io/KRXA/admin/control_ui.html",
+        "status": "ready"
+      }
+    }
+  }
+}

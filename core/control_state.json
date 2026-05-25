@@ -1,0 +1,35 @@
+{
+  "system": "KRXA",
+  "build_mode": "local",
+  "version": "local_build_exec_v2",
+  "root_state": "INIT",
+  "current_state": "ROOM_CONNECTED",
+  "status": "RUNNING",
+  "principles": {
+    "storage_independent": true,
+    "portable_structure": true,
+    "local_first_build": true,
+    "upload_after_completion": true
+  },
+  "state_machine": [
+    "INIT",
+    "TERMS_ACCEPTED",
+    "APP_ACTIVATED",
+    "ALIVE_HOME",
+    "SECURITY_SELECTED",
+    "TRANSLATE_SUCCESS",
+    "QUEUE_JOINED",
+    "MATCH_FOUND",
+    "ROOM_CONNECTED",
+    "RECONNECTING",
+    "ROOM_RECOVERED"
+  ],
+  "entry_points": [
+    "run_krxa.py",
+    "scripts/state_engine.py",
+    "scripts/run_m2m.py"
+  ],
+  "last_engine": "EXEC_ENGINE_BUILD",
+  "previous_state": "MATCH_FOUND",
+  "updated_at": "2026-05-21T12:50:02.563213+00:00"
+}

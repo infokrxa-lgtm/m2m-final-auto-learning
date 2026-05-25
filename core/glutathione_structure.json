@@ -1,0 +1,10 @@
+{
+  "schema": "KRXA_GLUTATHIONE_STRUCTURE_V24",
+  "meaning": "protective triad for KRXA continuity",
+  "triad": [
+    "trust_guard",
+    "memory_loop",
+    "recovery_point"
+  ],
+  "role": "신뢰붕괴를 막고 기억과 복구를 유지하는 보호 구조"
+}

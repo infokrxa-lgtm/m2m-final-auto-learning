@@ -1,0 +1,12 @@
+{
+  "schema": "KRXA_INPUT_STATE_V1",
+  "source": "local_default",
+  "session_id": "input_flow_local",
+  "from": "user_A",
+  "to": "user_B",
+  "source_lang": "ko",
+  "target_lang": "en",
+  "mode": "m2m",
+  "text": "안녕하세요",
+  "created_at": null
+}

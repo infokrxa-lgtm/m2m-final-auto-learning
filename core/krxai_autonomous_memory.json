@@ -1,0 +1,18 @@
+{
+  "schema": "KRXAI_AUTONOMOUS_MEMORY_V22",
+  "purpose": "LLM 연결 없이도 KRXA 흐름을 유지하기 위한 내부 기억 저장소",
+  "state": "READY",
+  "last_cycle": null,
+  "memory_items": [
+    {
+      "id": "seed_001",
+      "type": "principle",
+      "title": "고리형 학습 기억 시발점",
+      "content": "입력 → 처리 → 저장 → 재사용 → 개선 → 다시 입력",
+      "source": "KRXA_learning_loop_v18.docx",
+      "created_at": "2026-05-22T00:08:42.971771+00:00"
+    }
+  ],
+  "cycle_log": [],
+  "updated_at": "2026-05-22T00:08:42.971796+00:00"
+}

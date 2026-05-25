@@ -1,0 +1,16 @@
+{
+  "schema": "KRXA_MULTI_ROOM_STATE_V1",
+  "state": "READY",
+  "rooms": {
+    "room_default": {
+      "room_id": "room_default",
+      "state": "ROOM_CONNECTED",
+      "users": [
+        "user_A",
+        "user_B"
+      ],
+      "messages": []
+    }
+  },
+  "updated_at": "2026-05-21T15:11:10.517078+00:00"
+}

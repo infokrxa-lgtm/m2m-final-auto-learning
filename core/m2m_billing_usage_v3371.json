@@ -1,0 +1,18 @@
+{
+  "schema": "M2M_BILLING_USAGE_V33_7_1",
+  "users": {
+    "tester": {
+      "user_id": "tester",
+      "free_used": false,
+      "session_active": false,
+      "session_type": "none",
+      "started_at": "",
+      "ends_at": "",
+      "last_extend_prompt_at": "",
+      "consents": [],
+      "total_chatgpt_calls": 0,
+      "updated_at": "2026-05-25T18:30:36.220399+00:00"
+    }
+  },
+  "updated_at": "2026-05-25T18:30:36.220412+00:00"
+}

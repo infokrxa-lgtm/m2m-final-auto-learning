@@ -1,0 +1,19 @@
+{
+  "schema": "KRXA_LLM_CONTROL_BAR_UI_POLICY_V32_9",
+  "principle": "KRXAI와 LLM 연결은 사용자가 UI 상단 CONTROL BAR에서 OFF/AUTO/FORCE/USER 모드로 직접 제어한다.",
+  "bar": [
+    "OFF",
+    "AUTO",
+    "FORCE",
+    "USER"
+  ],
+  "status_fields": [
+    "llm_mode",
+    "llm_enabled",
+    "force_llm",
+    "api_key_state",
+    "model",
+    "last_llm_used"
+  ],
+  "updated_at": "2026-05-23T05:58:28.033354+00:00"
+}

@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>KRXA File Exchange</title>
+  <style>
+    :root{--bg:#08101e;--panel:#121a31;--line:#263454;--text:#e9eefc;--muted:#93a4c7;--ok:#5ee2a0;--bad:#ff6b6b;--blue:#7aa2ff;--warn:#ffd166}
+    *{box-sizing:border-box} body{margin:0;background:linear-gradient(135deg,#08101e,#111b34);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Arial,sans-serif}
+    header{padding:24px 28px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:16px;align-items:center}
+    h1{margin:0;font-size:24px}.tag{color:var(--ok);font-weight:800}.sub{color:var(--muted);font-size:13px;margin-top:6px}.nav a{color:var(--muted);text-decoration:none;margin-left:12px}.nav a:hover{color:var(--ok)}
+    main{padding:22px;display:grid;grid-template-columns:.9fr 1.1fr;gap:18px}.card{background:rgba(18,26,49,.93);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 10px 35px rgba(0,0,0,.25)}
+    h2{margin:0 0 12px;font-size:17px}input,textarea{width:100%;background:#080d1a;color:var(--text);border:1px solid var(--line);border-radius:12px;padding:12px;font:14px ui-monospace,SFMono-Regular,Consolas,monospace}textarea{min-height:88px;resize:vertical}
+    button{border:0;border-radius:12px;padding:11px 14px;background:var(--blue);color:#061026;font-weight:800;cursor:pointer}button.secondary{background:#25365f;color:var(--text)}button.danger{background:var(--bad);color:#210509}.row{display:flex;gap:10px;align-items:center;margin:10px 0}.row>*{flex:1}.row button{flex:0 0 auto}
+    .status{padding:10px 12px;border-radius:12px;background:#08101e;border:1px solid var(--line);color:var(--muted);font-size:13px}.log{white-space:pre-wrap;background:#080d1a;border:1px solid var(--line);border-radius:12px;padding:12px;min-height:110px;color:#cdd8f7;font:13px ui-monospace,SFMono-Regular,Consolas,monospace}
+    table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}th{color:var(--muted);font-weight:700}td a{color:var(--ok)}.pill{display:inline-block;padding:5px 9px;border-radius:999px;background:#0a2a20;color:var(--ok);font-size:12px;margin-left:8px}
+    @media(max-width:900px){main{grid-template-columns:1fr}header{display:block}.nav{margin-top:12px}.row{display:block}.row>*{margin-top:8px}}
+  </style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>KRXA <span class="tag">File Exchange</span><span class="pill">HTTPS</span></h1>
+    <div class="sub">KRXA 안에서 파일 업로드 · 다운로드 · 공유 · 논의 흐름 준비</div>
+  </div>
+  <nav class="nav"><a href="/">Home</a><a href="/control">Control</a><a href="/krxai">KRXAI</a><a href="/user">User</a><a href="/multi">Multi</a></nav>
+</header>
+<main>
+  <section class="card">
+    <h2>파일 업로드</h2>
+    <input id="file" type="file" />
+    <textarea id="note" placeholder="파일 메모: 이 파일을 KRXAI_DB 논의에 어떻게 쓸지 기록"></textarea>
+    <div class="row"><button onclick="uploadFile()">업로드</button><button class="secondary" onclick="loadFiles()">목록 새로고침</button></div>
+    <div id="status" class="status">대기 중</div>
+    <h2 style="margin-top:18px">Manifest</h2>
+    <div id="manifest" class="log">파일 목록 대기</div>
+  </section>
+  <section class="card">
+    <h2>파일 목록</h2>
+    <table>
+      <thead><tr><th>파일</th><th>크기</th><th>업로드</th><th>메모</th><th>동작</th></tr></thead>
+      <tbody id="rows"><tr><td colspan="5">불러오는 중...</td></tr></tbody>
+    </table>
+  </section>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+function size(n){if(!n)return '0 B'; const u=['B','KB','MB','GB']; let i=0; while(n>=1024&&i<u.length-1){n/=1024;i++} return n.toFixed(i?1:0)+' '+u[i]}
+function esc(s){return String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+async function api(path, opts={}){const r=await fetch(path,opts); const text=await r.text(); let j; try{j=JSON.parse(text)}catch(e){throw new Error(text||r.statusText)} if(!r.ok||j.ok===false) throw new Error(j.error||r.statusText); return j}
+async function loadFiles(){try{const j=await api('/api/files'); const files=j.manifest.files||[]; $('manifest').textContent=JSON.stringify(j.manifest,null,2); $('rows').innerHTML=files.length?files.map(f=>`<tr><td><a href="${f.download_url}">${esc(f.original_name||f.stored_name)}</a><br><small>${esc(f.stored_name)}</small></td><td>${size(f.size)}</td><td>${esc(f.uploaded_at||'-')}</td><td>${esc(f.note||'')}</td><td><button class="danger" onclick="deleteFile('${esc(f.stored_name)}')">삭제</button></td></tr>`).join(''):'<tr><td colspan="5">아직 업로드된 파일 없음</td></tr>'; $('status').textContent='LOADED @ '+new Date().toLocaleString()}catch(e){$('status').textContent='ERROR: '+e.message}}
+async function uploadFile(){try{const file=$('file').files[0]; if(!file) throw new Error('파일을 선택하세요'); const fd=new FormData(); fd.append('file', file); fd.append('note', $('note').value); const r=await fetch('/api/files/upload',{method:'POST',body:fd}); const j=await r.json(); if(!r.ok||j.ok===false) throw new Error(j.error||r.statusText); $('status').textContent='UPLOADED: '+j.file; $('file').value=''; await loadFiles()}catch(e){$('status').textContent='ERROR: '+e.message}}
+async function deleteFile(name){try{if(!confirm(name+' 삭제?')) return; await api('/api/files/delete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({stored_name:name})}); await loadFiles()}catch(e){$('status').textContent='ERROR: '+e.message}}
+loadFiles();
+</script>
+</body>
+</html>

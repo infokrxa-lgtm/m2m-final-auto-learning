@@ -1,0 +1,24 @@
+{
+  "schema": "KRXA_REPORT_QUALITY_POLICY_V30_1",
+  "mode": "best_practical_report",
+  "principle": "사용자가 보고서/리포트를 요청하면 단순 요약이 아니라 현실 의사결정에 쓸 수 있는 최고 수준 보고서로 작성한다.",
+  "structure": [
+    "Executive Summary",
+    "Purpose & Scope",
+    "Key Findings",
+    "Evidence / Sources",
+    "Analysis",
+    "Risks & Limitations",
+    "Strategic Options",
+    "Recommended Actions",
+    "Memory Seed Summary"
+  ],
+  "quality_rules": {
+    "clarity": "읽는 사람이 바로 판단할 수 있어야 한다.",
+    "evidence": "가능한 출처와 근거를 분리해 기록한다.",
+    "no_overclaim": "확인되지 않은 것은 추정으로 표시한다.",
+    "memory_saving": "보고서 전문이 아니라 시발점 요약과 핵심 결론만 저장한다.",
+    "copyright_guard": "원문 전문 또는 긴 발췌 저장 금지"
+  },
+  "updated_at": "2026-05-22T13:23:30.059911+00:00"
+}

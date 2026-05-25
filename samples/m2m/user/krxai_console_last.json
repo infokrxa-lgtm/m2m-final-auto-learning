@@ -1,0 +1,17 @@
+{
+  "ok": true,
+  "schema": "KRXA_LLM_BRIDGE_RESPONSE_V1",
+  "input": "안녕하세요",
+  "intent": "greeting",
+  "confidence": 0.9,
+  "db_output": "Hello",
+  "llm_bridge": {
+    "enabled": false,
+    "called": false,
+    "reason": "llm_disabled",
+    "provider": "openai_responses_api",
+    "model": "gpt-5.5"
+  },
+  "output": "Hello",
+  "updated_at": "2026-05-21T15:43:16.343128+00:00"
+}

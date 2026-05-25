@@ -1,0 +1,47 @@
+{
+  "message_state": "DELIVERED",
+  "last_message": {
+    "ts": "2026-05-21T12:50:02.548972+00:00",
+    "source": "user_A",
+    "target": "user_B",
+    "input": "안녕하세요",
+    "output": "[M2M:user_B] Hello",
+    "intent": "greeting",
+    "intent_confidence": 0.9,
+    "convert_confidence": 0.95,
+    "db_source": [
+      "language_db.json",
+      "krxai_db.json"
+    ]
+  },
+  "history": [
+    {
+      "ts": "2026-05-21T12:50:00.201199+00:00",
+      "source": "user_A",
+      "target": "user_B",
+      "input": "안녕하세요",
+      "output": "[M2M:user_B] Hello",
+      "intent": "greeting",
+      "intent_confidence": 0.9,
+      "convert_confidence": 0.95,
+      "db_source": [
+        "language_db.json",
+        "krxai_db.json"
+      ]
+    },
+    {
+      "ts": "2026-05-21T12:50:02.548972+00:00",
+      "source": "user_A",
+      "target": "user_B",
+      "input": "안녕하세요",
+      "output": "[M2M:user_B] Hello",
+      "intent": "greeting",
+      "intent_confidence": 0.9,
+      "convert_confidence": 0.95,
+      "db_source": [
+        "language_db.json",
+        "krxai_db.json"
+      ]
+    }
+  ]
+}

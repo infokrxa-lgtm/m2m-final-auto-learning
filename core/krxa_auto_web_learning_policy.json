@@ -1,0 +1,77 @@
+{
+  "schema": "KRXA_AUTO_WEB_LEARNING_LOOP_POLICY_V30",
+  "mode": "user_request_scoped_auto_web_learning",
+  "principle": "웹 학습은 사용자 요청 사안에 한정한다. 스스로 무제한 확장하거나 반복 검색하지 않는다.",
+  "scope_rules": {
+    "allowed": [
+      "사용자가 명시한 주제 1건에 대한 검색",
+      "공개 웹 결과의 제목/URL/짧은 요약 저장",
+      "검색 결과를 memory 후보로 저장",
+      "후속 검색 후보 제안"
+    ],
+    "blocked": [
+      "사용자 요청 없이 주기적 검색",
+      "무제한 재검색",
+      "대량 크롤링",
+      "원문 전문 저장",
+      "로그인/유료/민감정보 접근",
+      "외부 게시/전송"
+    ],
+    "limits": {
+      "max_results_per_request": 5,
+      "max_followup_suggestions": 3,
+      "auto_repeat": false,
+      "requires_user_trigger": true
+    }
+  },
+  "loop": [
+    "USER_QUERY",
+    "TRUST_GUARD_CHECK",
+    "SAFE_FETCH",
+    "SUMMARY_EXTRACT",
+    "SOURCE_STORE",
+    "MEMORY_CANDIDATE_STORE",
+    "FOLLOWUP_SUGGESTIONS"
+  ],
+  "updated_at": "2026-05-22T13:23:30.059911+00:00",
+  "memory_storage_rule": {
+    "default_search_analysis": "고리형 학습 기억 루프에는 전체 검색 결과가 아니라 시발점 요약만 저장한다.",
+    "seed_summary_only": true,
+    "store_fields": [
+      "query",
+      "purpose",
+      "trust_decision",
+      "seed_summary",
+      "source_count",
+      "top_source_titles",
+      "followup_suggestions"
+    ],
+    "do_not_store": [
+      "원문 전문",
+      "긴 본문",
+      "검색 결과 전체 원문",
+      "저작권 있는 긴 발췌"
+    ]
+  },
+  "report_mode": {
+    "trigger_keywords": [
+      "보고서",
+      "리포트",
+      "report",
+      "분석 보고서",
+      "최종 보고서"
+    ],
+    "quality_standard": "현실 최고 보고서 수준",
+    "requirements": [
+      "목적과 범위 정의",
+      "핵심 요약",
+      "시장/현실 맥락",
+      "근거 기반 분석",
+      "리스크와 한계",
+      "실행 전략",
+      "다음 액션",
+      "출처/근거 구조화"
+    ],
+    "memory_rule": "보고서 전체를 memory_loop에 그대로 저장하지 않고, 보고서의 시발점 요약과 핵심 결론만 저장한다."
+  }
+}

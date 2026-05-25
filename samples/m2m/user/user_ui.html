@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>KRXA 말대말 USER UI</title>
+<style>
+  :root{--bg:#071026;--panel:#111a38;--panel2:#0b132b;--line:#2c3d75;--text:#eaf1ff;--muted:#9fb4df;--accent:#36d399;--warn:#fbbf24;--blue:#60a5fa}
+  *{box-sizing:border-box} body{margin:0;background:linear-gradient(180deg,#061024,#0a1026);color:var(--text);font-family:Segoe UI,Malgun Gothic,Arial,sans-serif}
+  header{padding:18px 22px;border-bottom:1px solid var(--line);background:#071026;position:sticky;top:0;z-index:2}
+  h1{margin:0;font-size:22px}.sub{color:var(--muted);font-size:12px;margin-top:4px}
+  main{display:grid;grid-template-columns:1.1fr .9fr;gap:16px;padding:16px;max-width:1280px;margin:0 auto}
+  section{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:0 12px 30px rgba(0,0,0,.18)}
+  h2{font-size:17px;margin:0 0 14px}.row{display:flex;gap:10px;align-items:center;margin:10px 0}.row label{width:90px;color:var(--muted)}
+  input,select,textarea{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:10px;color:var(--text);padding:11px;font-size:15px}
+  textarea{min-height:130px;resize:vertical}.btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+  button,a.btn{background:#17306a;border:1px solid #3760bb;color:white;border-radius:10px;padding:10px 14px;cursor:pointer;text-decoration:none;font-weight:700}
+  button.primary{background:#0f766e;border-color:#2dd4bf}.badge{display:inline-flex;align-items:center;border:1px solid #2dd4bf;background:#0f766e55;color:#bfffee;padding:5px 9px;border-radius:999px;font-size:12px;font-weight:700}
+  .warn{border-color:#f59e0b;background:#7c4a0355;color:#fde68a}.chat{display:flex;flex-direction:column;gap:12px;min-height:300px}.bubble{max-width:88%;padding:12px 14px;border-radius:16px;border:1px solid var(--line);background:#0d1734;line-height:1.5}.me{align-self:flex-end;background:#102d51;border-color:#2563eb}.bot{align-self:flex-start}.meta{font-size:11px;color:var(--muted);margin-bottom:4px}.kv{display:grid;grid-template-columns:140px 1fr;gap:8px;border-top:1px solid var(--line);padding-top:12px;margin-top:12px}.kv div:nth-child(odd){color:var(--muted)}pre{background:#050b1a;border:1px solid var(--line);border-radius:12px;padding:12px;overflow:auto;max-height:360px;color:#dbeafe}.steps{display:flex;gap:8px;flex-wrap:wrap}.step{border:1px solid var(--line);border-radius:999px;padding:7px 10px;color:#bcd0ff;background:#13204a;font-size:12px}.step.on{border-color:#2dd4bf;color:#a7f3d0;background:#064e3b}.hint{color:var(--muted);font-size:13px;line-height:1.5}.full{grid-column:1/-1}@media(max-width:900px){main{grid-template-columns:1fr}.row{display:block}.row label{display:block;margin-bottom:6px}}
+</style>
+</head>
+<body>
+<header>
+  <h1>KRXA 말대말 USER UI</h1>
+  <div class="sub">Local User Interface · input → realtime engine → KRXADB → message_state · v10</div>
+</header>
+<main>
+  <section>
+    <h2>사용자 입력</h2>
+    <div class="row"><label>보내는 사람</label><input id="from" value="user_A"></div>
+    <div class="row"><label>받는 사람</label><input id="to" value="user_B"></div>
+    <div class="row"><label>모드</label><select id="mode"><option value="m2m">말대말 변환</option><option value="direct">그대로 전달</option></select></div>
+    <textarea id="input" placeholder="여기에 메시지를 입력하세요">안녕하세요. 말대말 사용자 UI 실행 테스트입니다.</textarea>
+    <div class="btns">
+      <button class="primary" onclick="runRealtimeFlow()">실시간 말대말 실행</button>
+      <button onclick="resetFlow()">초기화</button>
+      <a class="btn" id="download" href="#" download="input_state.json">input_state.json 저장</a>
+    </div>
+    <p class="hint">브라우저 보안 때문에 HTML이 로컬 JSON을 직접 덮어쓰지는 않습니다. 입력 결과를 <b>input_state.json</b>으로 저장한 뒤 <code>samples/m2m/user/input_state.json</code>에 덮어쓰고 <b>KRXA_INPUT_FLOW_CONNECT.bat</b>를 실행하면 됩니다.</p>
+  </section>
+
+  <section>
+    <h2>실행 상태</h2>
+    <span id="health" class="badge">READY</span>
+    <div class="kv">
+      <div>Current State</div><div id="state">INIT</div>
+      <div>Session</div><div id="session">user_ui_local</div>
+      <div>Delivered To</div><div id="delivered">-</div>
+      <div>Last Updated</div><div id="updated">-</div>
+    </div>
+  </section>
+
+  <section class="full">
+    <h2>상태 머신</h2>
+    <div id="steps" class="steps"></div>
+  </section>
+
+  <section>
+    <h2>대화 미리보기</h2>
+    <div id="chat" class="chat"></div>
+  </section>
+
+  <section>
+    <h2>생성 JSON</h2>
+    <pre id="json">{}</pre>
+  </section>
+</main>
+<script src="realtime_bridge.js"></script>
+<script>
+const states = ["INIT","TERMS_ACCEPTED","APP_ACTIVATED","ALIVE_HOME","SECURITY_SELECTED","TRANSLATE_SUCCESS","QUEUE_JOINED","MATCH_FOUND","ROOM_CONNECTED"];
+let payload = {};
+function renderSteps(current){
+  const idx = states.indexOf(current);
+  document.getElementById('steps').innerHTML = states.map((s,i)=>`<span class="step ${i<=idx?'on':''}">${s}</span>`).join('');
+}
+function convert(text,target,mode){ return mode === 'direct' ? text : `[M2M:${target}] ${text}`; }
+function runFlow(){
+  const from = document.getElementById('from').value.trim() || 'user_A';
+  const to = document.getElementById('to').value.trim() || 'user_B';
+  const mode = document.getElementById('mode').value;
+  const original = document.getElementById('input').value.trim();
+  const converted = convert(original,to,mode);
+  const now = new Date().toISOString();
+  payload = {
+    schema: 'KRXA_INPUT_STATE_V1',
+    source: 'user_ui.html',
+    state: 'INPUT_READY',
+    session_id: 'user_ui_local',
+    from, to, mode,
+    text: original,
+    converted_preview: converted,
+    timestamps: { created_at: now },
+    flow: states
+  };
+  document.getElementById('state').textContent = payload.state;
+  document.getElementById('delivered').textContent = to;
+  document.getElementById('updated').textContent = now;
+  document.getElementById('health').textContent = 'PASS';
+  document.getElementById('health').className = 'badge';
+  renderSteps(payload.state);
+  document.getElementById('chat').innerHTML = `
+    <div class="bubble me"><div class="meta">${from}</div>${escapeHtml(original)}</div>
+    <div class="bubble bot"><div class="meta">${to}</div>${escapeHtml(converted)}</div>`;
+  updateJson();
+}
+function updateJson(){
+  const text = JSON.stringify(payload,null,2);
+  document.getElementById('json').textContent = text;
+  const blob = new Blob([text], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  document.getElementById('download').href = url;
+}
+
+async function runRealtimeFlow(){
+  const from = document.getElementById('from').value.trim() || 'user_A';
+  const to = document.getElementById('to').value.trim() || 'user_B';
+  const mode = document.getElementById('mode').value;
+  const text = document.getElementById('input').value.trim();
+  document.getElementById('health').textContent = 'RUNNING';
+  try {
+    const data = await krxaRealtimeRun({from, to, mode, text, session_id:'realtime_ui_local'});
+    const r = data.result;
+    payload = {schema:'KRXA_REALTIME_RESULT_V1', ...r};
+    document.getElementById('state').textContent = r.state || 'ROOM_CONNECTED';
+    document.getElementById('delivered').textContent = r.to || to;
+    document.getElementById('updated').textContent = r.updated_at || new Date().toISOString();
+    document.getElementById('health').textContent = 'PASS';
+    renderSteps(r.state || 'ROOM_CONNECTED');
+    document.getElementById('chat').innerHTML = `
+      <div class="bubble me"><div class="meta">${escapeHtml(r.from || from)}</div>${escapeHtml(r.input || text)}</div>
+      <div class="bubble bot"><div class="meta">${escapeHtml(r.to || to)} · ${escapeHtml(r.intent || '')}</div>${escapeHtml(r.output || '')}</div>`;
+    updateJson();
+  } catch(e) {
+    document.getElementById('health').textContent = 'ENGINE OFF';
+    document.getElementById('health').className = 'badge warn';
+    alert('KRXA_REALTIME_RUN.bat을 먼저 실행하세요.\n\n' + e.message);
+  }
+}
+
+function resetFlow(){
+  payload = {schema:'KRXA_INPUT_STATE_V1', state:'INIT', session_id:'user_ui_local'};
+  document.getElementById('state').textContent='INIT'; document.getElementById('delivered').textContent='-'; document.getElementById('updated').textContent='-';
+  document.getElementById('health').textContent='READY'; document.getElementById('chat').innerHTML=''; renderSteps('INIT'); updateJson();
+}
+function escapeHtml(s){return s.replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
+resetFlow();
+</script>
+</body>
+</html>

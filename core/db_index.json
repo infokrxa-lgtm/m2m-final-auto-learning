@@ -1,0 +1,28 @@
+{
+  "schema": "KRXA_DB_INDEX_V1",
+  "root": "core",
+  "databases": {
+    "language_base": {
+      "path": "core/language_base.json",
+      "role": "legacy_base",
+      "status": "kept"
+    },
+    "language_db": {
+      "path": "core/language_db.json",
+      "role": "language_material",
+      "status": "active"
+    },
+    "krxai_db": {
+      "path": "core/krxai_db.json",
+      "role": "intent_decision_memory",
+      "status": "active"
+    }
+  },
+  "call_order": [
+    "language_db",
+    "krxai_db",
+    "session_log"
+  ],
+  "flow": "input -> language_db -> krxai_db -> engine -> session_log",
+  "version": "v1"
+}

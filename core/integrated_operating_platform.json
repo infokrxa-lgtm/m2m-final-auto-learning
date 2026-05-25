@@ -1,0 +1,38 @@
+{
+  "schema": "KRXA_FULL_SYSTEM_INTEGRATED_OPERATING_PLATFORM_V24",
+  "principle": "All prior versions, all discussed concepts, and all role-based UIs are included as one operating platform.",
+  "mode": "internal_ai_first",
+  "external_llm": "optional_disabled_by_default",
+  "operating_flow": "KRXA_UI <=> KRXAI_INTERNAL_ENGINE <=> [KRXAI_DB + language_DB + MEMORY_LOOP + TASK_QUEUE + TRUST_GUARD]",
+  "included_concepts": [
+    "flow_structure",
+    "fractal_structure",
+    "glutathione_structure",
+    "learning_loop",
+    "memory_loop",
+    "root_start_point",
+    "autostart_mode",
+    "trust_collapse_prevention",
+    "file_exchange",
+    "discussion_core",
+    "role_based_windowed_ui",
+    "user_room",
+    "developer_tools",
+    "admin_control",
+    "internal_thinking_engine"
+  ],
+  "routes": [
+    "/control",
+    "/admin",
+    "/dev",
+    "/user",
+    "/room",
+    "/files",
+    "/krxai",
+    "/memory",
+    "/tasks",
+    "/trust",
+    "/db"
+  ],
+  "updated_at": "2026-05-22T00:00:00Z"
+}

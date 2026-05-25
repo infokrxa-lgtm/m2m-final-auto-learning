@@ -1,0 +1,13 @@
+{
+  "schema": "KRXA_HARD_LINK_NEWWINDOW_POLICY_V31_9",
+  "principle": "상단 모듈 버튼은 JS onclick이 아니라 a target=_blank 직접 링크로 새 업무창을 연다.",
+  "routes": {
+    "KRXAI": "/window/krxai",
+    "DB": "/window/db",
+    "MEMORY": "/window/memory",
+    "TASK": "/window/task",
+    "FILE": "/window/file",
+    "API LOG": "/window/apilog"
+  },
+  "updated_at": "2026-05-22T23:59:32.118811+00:00"
+}

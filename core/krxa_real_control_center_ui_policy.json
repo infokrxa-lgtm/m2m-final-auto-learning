@@ -1,0 +1,28 @@
+{
+  "schema": "KRXA_REAL_CONTROL_CENTER_UI_POLICY_V32_6",
+  "principle": "사용자에게 JSON을 먼저 보여주지 않고, 상태·흐름·결과·행동 버튼 중심의 실제 관제 UI를 제공한다.",
+  "ui_rules": {
+    "json_default_hidden": true,
+    "status_color": [
+      "ready",
+      "pending",
+      "running",
+      "done",
+      "error"
+    ],
+    "auto_refresh_seconds": 3,
+    "main_flow": [
+      "CHAT",
+      "TASK",
+      "ENGINE",
+      "MEMORY",
+      "FILE"
+    ],
+    "roles": [
+      "USER",
+      "ADMIN",
+      "DEV"
+    ]
+  },
+  "updated_at": "2026-05-23T03:19:29.613692+00:00"
+}
