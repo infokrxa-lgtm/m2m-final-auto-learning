@@ -65,3 +65,60 @@ def dev_save(path: str = Form(...), content: str = Form(...)):
     target = safe_path(path)
     target.write_text(content, encoding="utf-8")
     return RedirectResponse(url=f"/dev?path={path}", status_code=303)
+
+from fastapi import UploadFile, File
+from fastapi.responses import HTMLResponse
+from openai import OpenAI
+import os
+
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+@app.get("/ui", response_class=HTMLResponse)
+def ui():
+    return """
+    <h2>KRXA Voice AI</h2>
+    <textarea id="text" style="width:100%;height:80px;">여기서부터 통역시작하자. hello</textarea><br/>
+    <button onclick="send()">전송</button>
+    <button onclick="rec()">🎤 녹음</button>
+    <div id="out"></div>
+    <audio id="audio" controls></audio>
+
+    <script>
+    async function send(){
+        let t = document.getElementById("text").value;
+        let r = await fetch("/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text:t})});
+        let j = await r.json();
+        document.getElementById("out").innerText = j.response;
+
+        let tts = await fetch("/tts",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text:j.response})});
+        let blob = await tts.blob();
+        let url = URL.createObjectURL(blob);
+        document.getElementById("audio").src = url;
+    }
+
+    let recStream, mediaRecorder, chunks=[];
+    async function rec(){
+        recStream = await navigator.mediaDevices.getUserMedia({audio:true});
+        mediaRecorder = new MediaRecorder(recStream);
+        chunks=[];
+        mediaRecorder.ondataavailable=e=>chunks.push(e.data);
+        mediaRecorder.onstop=upload;
+        mediaRecorder.start();
+        setTimeout(()=>mediaRecorder.stop(),3000);
+    }
+
+    async function upload(){
+        let blob=new Blob(chunks,{type:"audio/webm"});
+        let form=new FormData();
+        form.append("file",blob,"voice.webm");
+        let r=await fetch("/voice",{method:"POST",body:form});
+        let j=await r.json();
+        document.getElementById("out").innerText=j.response;
+
+        let tts = await fetch("/tts",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text:j.response})});
+        let blob2 = await tts.blob();
+        let url = URL.createObjectURL(blob2);
+        document.getElementById("audio").src = url;
+    }
+    </script>
+    """
