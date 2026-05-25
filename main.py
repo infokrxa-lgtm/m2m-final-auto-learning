@@ -258,7 +258,7 @@ def dev(path: str = ""):
     return f"""<!doctype html>
 <html><body>
 <h2>KRXA DEV FILES</h2>
-<p><a href="/ui">🎙 Voice AI UI</a></p>
+<p><a href="/ui">Voice AI UI</a></p>
 <ul>{''.join(items)}</ul>
 </body></html>"""
 
