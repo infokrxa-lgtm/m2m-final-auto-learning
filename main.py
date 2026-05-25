@@ -220,6 +220,7 @@ async function playTTS(text) {
 }
 from fastapi import Form
 from fastapi.responses import RedirectResponse
+import html
 
 SAFE_ROOT = Path(".").resolve()
 
@@ -232,42 +233,37 @@ def safe_path(p: str):
 @app.get("/dev", response_class=HTMLResponse)
 def dev(path: str = ""):
     root = safe_path(path)
+
     if root.is_file():
-        content = root.read_text(encoding="utf-8", errors="ignore")
-        return f"""
-        <h2>KRXA DEV EDIT</h2>
-        <p>{path}</p>
-        <form method="post" action="/dev/save">
-          <input type="hidden" name="path" value="{path}">
-          <textarea name="content" style="width:100%;height:70vh;">{content}</textarea>
-          <br><button type="submit">저장</button>
-        </form>
-        <p><a href="/dev">파일 목록</a></p>
-        """
+        content = html.escape(root.read_text(encoding="utf-8", errors="ignore"))
+        safe_name = html.escape(path)
+        return f"""<!doctype html>
+<html><body>
+<h2>KRXA DEV EDIT</h2>
+<p>{safe_name}</p>
+<form method="post" action="/dev/save">
+<input type="hidden" name="path" value="{safe_name}">
+<textarea name="content" style="width:100%;height:70vh;">{content}</textarea>
+<br><button type="submit">저장</button>
+</form>
+<p><a href="/dev">파일 목록</a></p>
+</body></html>"""
 
     items = []
     for item in sorted(root.iterdir()):
-        rel = item.relative_to(SAFE_ROOT)
+        rel = str(item.relative_to(SAFE_ROOT))
         icon = "📁" if item.is_dir() else "📄"
-        items.append(f'<li><a href="/dev?path={rel}">{icon} {rel}</a></li>')
+        items.append(f'<li><a href="/dev?path={html.escape(rel)}">{icon} {html.escape(rel)}</a></li>')
 
-    return f"""
-    <h2>KRXA DEV FILES</h2>
-    <p><a href="/ui">🎙 Voice AI UI</a></p>
-    <ul>{''.join(items)}</ul>
-    """
+    return f"""<!doctype html>
+<html><body>
+<h2>KRXA DEV FILES</h2>
+<p><a href="/ui">🎙 Voice AI UI</a></p>
+<ul>{''.join(items)}</ul>
+</body></html>"""
 
 @app.post("/dev/save")
 def dev_save(path: str = Form(...), content: str = Form(...)):
     target = safe_path(path)
     target.write_text(content, encoding="utf-8")
     return RedirectResponse(url=f"/dev?path={path}", status_code=303)
-async function loadHistory() {
-  const res = await fetch("/history");
-  const data = await res.json();
-  document.getElementById("answer").innerText = JSON.stringify(data.history, null, 2);
-}
-</script>
-</body>
-</html>
-"""
