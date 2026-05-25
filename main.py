@@ -237,30 +237,33 @@ def dev(path: str = ""):
     if root.is_file():
         content = html.escape(root.read_text(encoding="utf-8", errors="ignore"))
         safe_name = html.escape(path)
-        return f"""<!doctype html>
-<html><body>
-<h2>KRXA DEV EDIT</h2>
-<p>{safe_name}</p>
-<form method="post" action="/dev/save">
-<input type="hidden" name="path" value="{safe_name}">
-<textarea name="content" style="width:100%;height:70vh;">{content}</textarea>
-<br><button type="submit">저장</button>
-</form>
-<p><a href="/dev">파일 목록</a></p>
-</body></html>"""
+        return (
+            "<!doctype html><html><body>"
+            "<h2>KRXA DEV EDIT</h2>"
+            f"<p>{safe_name}</p>"
+            '<form method="post" action="/dev/save">'
+            f'<input type="hidden" name="path" value="{safe_name}">'
+            f'<textarea name="content" style="width:100%;height:70vh;">{content}</textarea>'
+            "<br><button type=\"submit\">SAVE</button>"
+            "</form>"
+            '<p><a href="/dev">FILE LIST</a></p>'
+            "</body></html>"
+        )
 
     items = []
     for item in sorted(root.iterdir()):
         rel = str(item.relative_to(SAFE_ROOT))
-        icon = "📁" if item.is_dir() else "📄"
-        items.append(f'<li><a href="/dev?path={html.escape(rel)}">{icon} {html.escape(rel)}</a></li>')
+        label = html.escape(rel)
+        icon = "[DIR]" if item.is_dir() else "[FILE]"
+        items.append(f'<li><a href="/dev?path={label}">{icon} {label}</a></li>')
 
-    return f"""<!doctype html>
-<html><body>
-<h2>KRXA DEV FILES</h2>
-<p><a href="/ui">Voice AI UI</a></p>
-<ul>{''.join(items)}</ul>
-</body></html>"""
+    return (
+        "<!doctype html><html><body>"
+        "<h2>KRXA DEV FILES</h2>"
+        '<p><a href="/ui">Voice AI UI</a></p>'
+        f"<ul>{''.join(items)}</ul>"
+        "</body></html>"
+    )
 
 @app.post("/dev/save")
 def dev_save(path: str = Form(...), content: str = Form(...)):
