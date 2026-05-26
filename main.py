@@ -1,4 +1,4 @@
-import os, json, html, uuid, time, shutil, sqlite3
+import os, json, html, uuid, time, shutil
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 
@@ -6,7 +6,7 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect, UploadFile, File, F
 from fastapi.responses import HTMLResponse, Response, RedirectResponse
 from openai import OpenAI
 
-app = FastAPI(title="KRXA V53 DB Product")
+app = FastAPI(title="KRXA V58 Natural Travel Service")
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
@@ -14,103 +14,41 @@ ROOT = Path(".").resolve()
 DATA = Path("storage")
 DATA.mkdir(exist_ok=True)
 
-DB_PATH = DATA / "krxa_v53.db"
-
 TEXT_MODEL = os.getenv("OPENAI_TEXT_MODEL", "gpt-4.1-mini")
 STT_MODEL = os.getenv("OPENAI_STT_MODEL", "whisper-1")
 TTS_MODEL = os.getenv("OPENAI_TTS_MODEL", "gpt-4o-mini-tts")
 
-LIVE_WS = {}
+SESSIONS = {}
 LOGS = []
 
-MODES = {
-    "travel": "여행",
-    "call": "통화",
-    "youtube": "유튜브",
-    "game": "게임",
-    "field": "현장"
-}
+INVITE_PROMPT = """
+[KRXA V58]
 
-def now():
-    return time.strftime("%Y-%m-%d %H:%M:%S")
+역할:
+- KRXA는 자연대화 기반 여행 서비스이다.
+- 통역은 기본 기능이다.
+- 여행 중 필요한 서비스를 자연스럽게 제공한다.
+- 내부 AI 엔진은 사용자에게 노출되지 않는다.
+
+규칙:
+1. 대화 흐름을 유지한다.
+2. 이전 history를 반영한다.
+3. 입력 언어를 자동 감지한다.
+4. 같은 언어면 자연스럽게 유지한다.
+5. 다른 언어면 상대가 이해할 수 있게 자연스럽게 통역한다.
+6. 설명하지 말고 사용자에게 바로 보여줄 말만 출력한다.
+7. 여행 상황이면 필요한 행동을 짧게 돕는다.
+"""
 
 def new_id(prefix):
     return f"{prefix}-{uuid.uuid4().hex[:8]}"
 
-def db():
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    return conn
+def now():
+    return time.strftime("%Y-%m-%d %H:%M:%S")
 
-def init_db():
-    with db() as conn:
-        conn.executescript("""
-        CREATE TABLE IF NOT EXISTS users (
-            user_id TEXT PRIMARY KEY,
-            nickname TEXT,
-            language TEXT,
-            auth_type TEXT,
-            created_at TEXT,
-            last_seen TEXT
-        );
-
-        CREATE TABLE IF NOT EXISTS devices (
-            device_id TEXT PRIMARY KEY,
-            user_id TEXT,
-            device_info TEXT,
-            created_at TEXT,
-            last_seen TEXT
-        );
-
-        CREATE TABLE IF NOT EXISTS rooms (
-            room_id TEXT PRIMARY KEY,
-            owner_id TEXT,
-            mode TEXT,
-            title TEXT,
-            state TEXT,
-            created_at TEXT
-        );
-
-        CREATE TABLE IF NOT EXISTS room_users (
-            room_id TEXT,
-            user_id TEXT,
-            joined_at TEXT,
-            PRIMARY KEY (room_id, user_id)
-        );
-
-        CREATE TABLE IF NOT EXISTS invites (
-            invite_id TEXT PRIMARY KEY,
-            room_id TEXT,
-            created_at TEXT
-        );
-
-        CREATE TABLE IF NOT EXISTS history (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            room_id TEXT,
-            from_user TEXT,
-            source TEXT,
-            result_json TEXT,
-            created_at TEXT
-        );
-
-        CREATE TABLE IF NOT EXISTS logs (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            kind TEXT,
-            message TEXT,
-            created_at TEXT
-        );
-        """)
-
-init_db()
-
-def log(kind, message):
-    LOGS.append({"time": now(), "kind": kind, "message": message})
+def log(kind, msg):
+    LOGS.append({"time": now(), "kind": kind, "msg": msg})
     del LOGS[:-200]
-    with db() as conn:
-        conn.execute(
-            "INSERT INTO logs(kind,message,created_at) VALUES(?,?,?)",
-            (kind, message, now())
-        )
 
 def safe_path(p=""):
     target = (ROOT / p).resolve()
@@ -118,224 +56,180 @@ def safe_path(p=""):
         raise ValueError("invalid path")
     return target
 
-def row_to_dict(row):
-    return dict(row) if row else None
+def history_file(session_id):
+    return DATA / f"history_{session_id}.json"
 
-def get_or_create_user(user_id=None, nickname="", language="auto", auth_type="guest"):
-    if not user_id:
-        user_id = new_id("guest")
+def load_history(session_id):
+    f = history_file(session_id)
+    if not f.exists():
+        return []
+    try:
+        return json.loads(f.read_text(encoding="utf-8"))
+    except Exception:
+        return []
 
-    with db() as conn:
-        row = conn.execute("SELECT * FROM users WHERE user_id=?", (user_id,)).fetchone()
-        if not row:
-            conn.execute(
-                "INSERT INTO users(user_id,nickname,language,auth_type,created_at,last_seen) VALUES(?,?,?,?,?,?)",
-                (user_id, nickname or user_id, language, auth_type, now(), now())
-            )
-        else:
-            conn.execute(
-                "UPDATE users SET last_seen=?, language=COALESCE(NULLIF(?,''), language) WHERE user_id=?",
-                (now(), language, user_id)
-            )
+def save_history(session_id, user_text, krxa_text, intent, cards):
+    h = load_history(session_id)
+    h.append({
+        "time": now(),
+        "user": user_text,
+        "krxa": krxa_text,
+        "intent": intent,
+        "cards": cards
+    })
+    history_file(session_id).write_text(
+        json.dumps(h[-80:], ensure_ascii=False, indent=2),
+        encoding="utf-8"
+    )
 
-    return user_id
+def analyze_intent(text):
+    t = text.lower()
 
-def register_device(user_id, device_id=None, device_info=""):
-    if not device_id:
-        device_id = new_id("device")
+    if any(x in t for x in ["맛집", "식당", "restaurant", "food", "eat", "밥", "카페", "coffee"]):
+        return "food"
+    if any(x in t for x in ["어디", "길", "지도", "where", "direction", "station", "역", "택시"]):
+        return "map"
+    if any(x in t for x in ["가격", "얼마", "price", "cost", "money", "환율", "exchange"]):
+        return "price"
+    if any(x in t for x in ["아파", "병원", "약국", "help", "emergency", "hospital", "pharmacy"]):
+        return "emergency"
+    if any(x in t for x in ["예약", "reservation", "book", "booking"]):
+        return "reservation"
+    if any(x in t for x in ["호텔", "숙소", "check in", "체크인"]):
+        return "hotel"
+    if any(x in t for x in ["공항", "airport", "flight", "비행기", "게이트"]):
+        return "airport"
+    if any(x in t for x in ["쇼핑", "shopping", "선물", "souvenir", "면세"]):
+        return "shopping"
 
-    with db() as conn:
-        row = conn.execute("SELECT * FROM devices WHERE device_id=?", (device_id,)).fetchone()
-        if not row:
-            conn.execute(
-                "INSERT INTO devices(device_id,user_id,device_info,created_at,last_seen) VALUES(?,?,?,?,?)",
-                (device_id, user_id, device_info, now(), now())
-            )
-        else:
-            conn.execute(
-                "UPDATE devices SET user_id=?, last_seen=?, device_info=? WHERE device_id=?",
-                (user_id, now(), device_info, device_id)
-            )
-    return device_id
+    return "general"
 
-def create_room(owner_id, mode="travel", title="KRXA Room"):
-    room_id = new_id("room")
-    invite_id = new_id("invite")
+def build_cards(intent, text):
+    q = text.replace(" ", "+")
+    cards = []
 
-    with db() as conn:
-        conn.execute(
-            "INSERT INTO rooms(room_id,owner_id,mode,title,state,created_at) VALUES(?,?,?,?,?,?)",
-            (room_id, owner_id, mode, title, "LIVE", now())
-        )
-        conn.execute(
-            "INSERT OR IGNORE INTO room_users(room_id,user_id,joined_at) VALUES(?,?,?)",
-            (room_id, owner_id, now())
-        )
-        conn.execute(
-            "INSERT INTO invites(invite_id,room_id,created_at) VALUES(?,?,?)",
-            (invite_id, room_id, now())
-        )
+    if intent == "food":
+        cards = [
+            {"label": "🍴 맛집 찾기", "url": f"https://www.google.com/maps/search/restaurants+near+me+{q}"},
+            {"label": "☕ 카페 찾기", "url": "https://www.google.com/maps/search/cafe+near+me"},
+            {"label": "📞 예약 문장", "text": "Can I make a reservation?"},
+            {"label": "👍 추천 질문", "text": "What do you recommend here?"}
+        ]
 
-    log("room", f"{room_id} created by {owner_id}")
-    return room_id, invite_id
+    elif intent == "map":
+        cards = [
+            {"label": "📍 지도 열기", "url": f"https://www.google.com/maps/search/{q}"},
+            {"label": "🚇 가까운 역 찾기", "url": "https://www.google.com/maps/search/subway+station+near+me"},
+            {"label": "🚕 택시 문장", "text": "Please take me here."},
+            {"label": "🧭 길 묻기", "text": "How can I get there?"}
+        ]
 
-def join_room(user_id, room_id):
-    with db() as conn:
-        room = conn.execute("SELECT * FROM rooms WHERE room_id=?", (room_id,)).fetchone()
-        if not room:
-            return False
-        conn.execute(
-            "INSERT OR IGNORE INTO room_users(room_id,user_id,joined_at) VALUES(?,?,?)",
-            (room_id, user_id, now())
-        )
-    log("join", f"{user_id} joined {room_id}")
-    return True
+    elif intent == "price":
+        cards = [
+            {"label": "💳 가격 질문", "text": "How much is this?"},
+            {"label": "💳 카드 결제", "text": "Can I pay by card?"},
+            {"label": "💱 환율 검색", "url": "https://www.google.com/search?q=exchange+rate"}
+        ]
 
-def invite_to_room(invite_id):
-    with db() as conn:
-        row = conn.execute("SELECT room_id FROM invites WHERE invite_id=?", (invite_id,)).fetchone()
-        return row["room_id"] if row else None
+    elif intent == "emergency":
+        cards = [
+            {"label": "🚨 병원 찾기", "url": "https://www.google.com/maps/search/hospital+near+me"},
+            {"label": "💊 약국 찾기", "url": "https://www.google.com/maps/search/pharmacy+near+me"},
+            {"label": "🆘 긴급 문장", "text": "I need help. Please call emergency services."}
+        ]
 
-def room_participants(room_id):
-    with db() as conn:
-        rows = conn.execute("""
-            SELECT u.* FROM users u
-            JOIN room_users ru ON u.user_id = ru.user_id
-            WHERE ru.room_id=?
-        """, (room_id,)).fetchall()
-        return [dict(r) for r in rows]
+    elif intent == "reservation":
+        cards = [
+            {"label": "📞 예약 문장", "text": "I would like to make a reservation."},
+            {"label": "⏰ 시간 확인", "text": "What time is available?"},
+            {"label": "👥 인원 말하기", "text": "A table for two, please."}
+        ]
 
-def load_history(room_id, limit=10):
-    with db() as conn:
-        rows = conn.execute(
-            "SELECT * FROM history WHERE room_id=? ORDER BY id DESC LIMIT ?",
-            (room_id, limit)
-        ).fetchall()
-    return [dict(r) for r in reversed(rows)]
+    elif intent == "hotel":
+        cards = [
+            {"label": "🏨 체크인 문장", "text": "I would like to check in."},
+            {"label": "📄 예약 확인", "text": "I have a reservation under this name."},
+            {"label": "📍 호텔 주변", "url": "https://www.google.com/maps/search/hotel+near+me"}
+        ]
 
-def save_history(room_id, from_user, source, result):
-    with db() as conn:
-        conn.execute(
-            "INSERT INTO history(room_id,from_user,source,result_json,created_at) VALUES(?,?,?,?,?)",
-            (room_id, from_user, source, json.dumps(result, ensure_ascii=False), now())
-        )
+    elif intent == "airport":
+        cards = [
+            {"label": "✈️ 공항 지도", "url": "https://www.google.com/maps/search/airport+near+me"},
+            {"label": "🛂 게이트 질문", "text": "Where is my boarding gate?"},
+            {"label": "🧳 수하물 질문", "text": "Where can I pick up my baggage?"}
+        ]
 
-def krxa_translate(text, target_lang="auto", room_id="default"):
-    history = load_history(room_id, 10)
-    prompt = f"""
-KRXA internal interpreter engine.
+    elif intent == "shopping":
+        cards = [
+            {"label": "🛍 쇼핑 장소", "url": "https://www.google.com/maps/search/shopping+near+me"},
+            {"label": "🎁 선물 추천", "text": "What is a popular local gift?"},
+            {"label": "💳 결제 질문", "text": "Can I pay by card?"}
+        ]
 
-Rules:
-- UI shows only KRXA.
-- You are not a participant.
-- If same language, relay naturally.
-- If different language, translate naturally for the target user.
-- Output only the final sentence.
-- No explanation.
+    else:
+        cards = [
+            {"label": "🔁 다시 말하기", "text": "Could you say that again, please?"},
+            {"label": "🐢 천천히 말하기", "text": "Please speak slowly."}
+        ]
 
-target_lang: {target_lang}
+    return cards
 
-history:
-{json.dumps(history, ensure_ascii=False)}
+def krxa_process(text, session_id):
+    history = load_history(session_id)[-12:]
 
-input:
-{text}
-"""
+    messages = [{"role": "system", "content": INVITE_PROMPT}]
+
+    for h in history:
+        messages.append({"role": "user", "content": h.get("user", "")})
+        messages.append({"role": "assistant", "content": h.get("krxa", "")})
+
+    messages.append({"role": "user", "content": text})
+
     r = client.chat.completions.create(
         model=TEXT_MODEL,
-        messages=[{"role": "user", "content": prompt}]
+        messages=messages
     )
-    return r.choices[0].message.content or text
 
-async def broadcast(room_id, payload, exclude=None):
-    for uid, ws in list(LIVE_WS.get(room_id, {}).items()):
-        if uid == exclude:
-            continue
-        try:
-            await ws.send_json(payload)
-        except Exception:
-            pass
+    result = r.choices[0].message.content or text
+    intent = analyze_intent(text)
+    cards = build_cards(intent, text)
+
+    save_history(session_id, text, result, intent, cards)
+    log("krxa", f"{session_id}: {intent}")
+
+    return {
+        "text": text,
+        "translated": result,
+        "intent": intent,
+        "cards": cards
+    }
 
 @app.get("/")
-def home():
-    return {"ok": True, "version": "V53", "routes": ["/user", "/signup", "/login", "/app", "/control", "/dev"]}
+def root():
+    return {"ok": True, "version": "V58", "routes": ["/user", "/control", "/dev", "/health"]}
 
 @app.get("/health")
 def health():
-    return {"ok": True, "version": "V53-DB"}
-
-@app.get("/admin")
-def admin_redirect():
-    return RedirectResponse("/control", status_code=302)
+    return {"ok": True, "version": "V58-NATURAL-TRAVEL"}
 
 @app.get("/api/state")
 def api_state():
-    with db() as conn:
-        users = conn.execute("SELECT COUNT(*) c FROM users").fetchone()["c"]
-        devices = conn.execute("SELECT COUNT(*) c FROM devices").fetchone()["c"]
-        rooms = conn.execute("SELECT COUNT(*) c FROM rooms").fetchone()["c"]
-        invites = conn.execute("SELECT COUNT(*) c FROM invites").fetchone()["c"]
-        recent_logs = conn.execute("SELECT * FROM logs ORDER BY id DESC LIMIT 80").fetchall()
-
     return {
         "ok": True,
-        "version": "V53",
-        "users": users,
-        "devices": devices,
-        "rooms": rooms,
-        "invites": invites,
-        "live_rooms": list(LIVE_WS.keys()),
-        "modes": MODES,
-        "logs": [dict(r) for r in recent_logs]
+        "version": "V58",
+        "sessions": len(SESSIONS),
+        "logs": LOGS[-50:],
+        "storage": str(DATA),
+        "openai_key": bool(os.getenv("OPENAI_API_KEY"))
     }
 
-@app.post("/api/register")
-def api_register(
-    nickname: str = Form(""),
-    language: str = Form("auto"),
-    guest_user_id: str = Form(""),
-    device_id: str = Form(""),
-    device_info: str = Form("")
-):
-    user_id = guest_user_id or new_id("user")
-    get_or_create_user(user_id, nickname or user_id, language, "member")
-    device_id = register_device(user_id, device_id, device_info)
-    log("signup", f"{user_id} registered")
-    return {"ok": True, "user_id": user_id, "device_id": device_id}
+@app.get("/history")
+def history(session_id: str = "default"):
+    return {"ok": True, "session_id": session_id, "history": load_history(session_id)}
 
-@app.post("/api/login")
-def api_login(user_id: str = Form(...), language: str = Form("auto"), device_id: str = Form(""), device_info: str = Form("")):
-    get_or_create_user(user_id, user_id, language, "member")
-    device_id = register_device(user_id, device_id, device_info)
-    return {"ok": True, "user_id": user_id, "device_id": device_id}
-
-@app.post("/device/register")
-def device_register(user_id: str = Form(...), device_id: str = Form(""), device_info: str = Form("")):
-    get_or_create_user(user_id)
-    device_id = register_device(user_id, device_id, device_info)
-    return {"ok": True, "device_id": device_id}
-
-@app.post("/api/create_room")
-def api_create_room(user_id: str = Form(...), mode: str = Form("travel")):
-    get_or_create_user(user_id)
-    room_id, invite_id = create_room(user_id, mode, f"KRXA {MODES.get(mode, mode)}")
-    return {
-        "ok": True,
-        "room_id": room_id,
-        "invite_id": invite_id,
-        "invite_url": f"/app?invite={invite_id}&mode={mode}"
-    }
-
-@app.post("/api/join")
-def api_join(user_id: str = Form(...), room_id: str = Form(""), invite_id: str = Form(""), language: str = Form("auto")):
-    get_or_create_user(user_id, user_id, language)
-    if invite_id:
-        room_id = invite_to_room(invite_id)
-        if not room_id:
-            return {"ok": False, "error": "invalid invite"}
-    if not room_id:
-        return {"ok": False, "error": "missing room_id"}
-    return {"ok": join_room(user_id, room_id), "room_id": room_id}
+@app.post("/api/text")
+def api_text(text: str = Form(...), session_id: str = Form("default")):
+    return {"ok": True, "result": krxa_process(text, session_id)}
 
 @app.post("/api/stt")
 async def stt(file: UploadFile = File(...)):
@@ -343,9 +237,13 @@ async def stt(file: UploadFile = File(...)):
     with NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
         tmp.write(await file.read())
         tmp_path = tmp.name
+
     try:
         with open(tmp_path, "rb") as f:
-            tr = client.audio.transcriptions.create(model=STT_MODEL, file=f)
+            tr = client.audio.transcriptions.create(
+                model=STT_MODEL,
+                file=f
+            )
         return {"ok": True, "text": tr.text}
     finally:
         try:
@@ -355,53 +253,20 @@ async def stt(file: UploadFile = File(...)):
 
 @app.post("/api/tts")
 def tts(text: str = Form(...)):
-    audio = client.audio.speech.create(model=TTS_MODEL, voice="alloy", input=text)
+    audio = client.audio.speech.create(
+        model=TTS_MODEL,
+        voice="alloy",
+        input=text
+    )
     return Response(content=audio.read(), media_type="audio/mpeg")
 
-@app.get("/history")
-def history(room_id: str = "default"):
-    return {"ok": True, "room_id": room_id, "history": load_history(room_id, 100)}
-
-@app.websocket("/ws/room")
-async def ws_room(ws: WebSocket):
+@app.websocket("/ws/krxa")
+async def ws_krxa(ws: WebSocket):
     await ws.accept()
+    session_id = ws.query_params.get("session_id") or new_id("session")
+    SESSIONS[session_id] = {"created": now(), "state": "LIVE"}
 
-    user_id = ws.query_params.get("user_id") or new_id("guest")
-    language = ws.query_params.get("language", "auto")
-    mode = ws.query_params.get("mode", "travel")
-    room_id = ws.query_params.get("room_id")
-    invite_id = ws.query_params.get("invite_id")
-
-    get_or_create_user(user_id, user_id, language, "guest")
-
-    if invite_id and not room_id:
-        room_id = invite_to_room(invite_id)
-
-    if not room_id:
-        room_id, invite_id = create_room(user_id, mode)
-    else:
-        join_room(user_id, room_id)
-
-    LIVE_WS.setdefault(room_id, {})[user_id] = ws
-
-    invite_url = ""
-    with db() as conn:
-        inv = conn.execute("SELECT invite_id FROM invites WHERE room_id=? LIMIT 1", (room_id,)).fetchone()
-        if inv:
-            invite_url = f"/app?invite={inv['invite_id']}&mode={mode}"
-
-    await ws.send_json({
-        "type": "joined",
-        "user_id": user_id,
-        "room_id": room_id,
-        "participants": [p["user_id"] for p in room_participants(room_id)],
-        "invite_url": invite_url
-    })
-
-    await broadcast(room_id, {
-        "type": "presence",
-        "participants": [p["user_id"] for p in room_participants(room_id)]
-    }, exclude=user_id)
+    await ws.send_json({"type": "init", "session_id": session_id, "state": "LIVE"})
 
     try:
         while True:
@@ -410,248 +275,262 @@ async def ws_room(ws: WebSocket):
             if not text:
                 continue
 
-            participants = room_participants(room_id)
-            delivered = []
-
-            for target in participants:
-                target_id = target["user_id"]
-                if target_id == user_id:
-                    continue
-
-                translated = krxa_translate(text, target.get("language", "auto"), room_id)
-
-                payload = {
-                    "type": "message",
-                    "from": user_id,
-                    "source": text,
-                    "translated": translated,
-                    "mode": mode
-                }
-
-                target_ws = LIVE_WS.get(room_id, {}).get(target_id)
-                if target_ws:
-                    await target_ws.send_json(payload)
-
-                delivered.append({"to": target_id, "translated": translated})
-
-            result = {"delivered": delivered}
-            save_history(room_id, user_id, text, result)
-
-            await ws.send_json({"type": "sent", "source": text, "delivered": delivered})
+            await ws.send_json({"type": "status", "state": "THINKING"})
+            result = krxa_process(text, session_id)
+            await ws.send_json({"type": "result", "result": result, "state": "LIVE"})
 
     except WebSocketDisconnect:
-        LIVE_WS.get(room_id, {}).pop(user_id, None)
-        log("disconnect", f"{user_id} left {room_id}")
-
-@app.get("/signup", response_class=HTMLResponse)
-def signup_page():
-    return """
-<html><head><meta name="viewport" content="width=device-width, initial-scale=1">
-<style>
-body{background:#071426;color:white;font-family:Arial}.wrap{max-width:430px;margin:auto;padding:24px}
-input,select,button{width:100%;box-sizing:border-box;padding:14px;margin:8px 0;border-radius:12px}
-button{background:#2363ff;color:white;border:0;font-weight:bold}
-</style></head><body><div class="wrap">
-<h1>KRXA 가입</h1>
-<p>최소 정보만 입력합니다. 기존 게스트 사용 기록은 유지됩니다.</p>
-<input id="nickname" placeholder="닉네임">
-<select id="language"><option value="auto">언어 자동</option><option value="ko">한국어</option><option value="en">English</option><option value="ja">日本語</option></select>
-<button onclick="signup()">가입하고 시작</button>
-<p><a style="color:#8ab4ff" href="/user">게스트로 계속 사용</a></p>
-<script>
-async function signup(){
- const guest=localStorage.getItem("krxa_user_id") || "";
- const device=localStorage.getItem("krxa_device_id") || "";
- const fd=new FormData();
- fd.append("nickname",document.getElementById("nickname").value);
- fd.append("language",document.getElementById("language").value);
- fd.append("guest_user_id",guest);
- fd.append("device_id",device);
- fd.append("device_info",navigator.userAgent);
- const r=await fetch("/api/register",{method:"POST",body:fd});
- const j=await r.json();
- localStorage.setItem("krxa_user_id",j.user_id);
- localStorage.setItem("krxa_device_id",j.device_id);
- location.href="/user";
-}
-</script></div></body></html>
-"""
-
-@app.get("/login", response_class=HTMLResponse)
-def login_page():
-    return """
-<html><head><meta name="viewport" content="width=device-width, initial-scale=1">
-<style>
-body{background:#071426;color:white;font-family:Arial}.wrap{max-width:430px;margin:auto;padding:24px}
-input,select,button{width:100%;box-sizing:border-box;padding:14px;margin:8px 0;border-radius:12px}
-button{background:#2363ff;color:white;border:0;font-weight:bold}
-</style></head><body><div class="wrap">
-<h1>KRXA 로그인</h1>
-<input id="user_id" placeholder="사용자 ID">
-<select id="language"><option value="auto">언어 자동</option><option value="ko">한국어</option><option value="en">English</option></select>
-<button onclick="login()">로그인</button>
-<script>
-async function login(){
- const fd=new FormData();
- fd.append("user_id",document.getElementById("user_id").value);
- fd.append("language",document.getElementById("language").value);
- fd.append("device_id",localStorage.getItem("krxa_device_id")||"");
- fd.append("device_info",navigator.userAgent);
- const r=await fetch("/api/login",{method:"POST",body:fd});
- const j=await r.json();
- localStorage.setItem("krxa_user_id",j.user_id);
- localStorage.setItem("krxa_device_id",j.device_id);
- location.href="/user";
-}
-</script></div></body></html>
-"""
+        SESSIONS[session_id]["state"] = "OFF"
+        log("disconnect", session_id)
 
 @app.get("/user", response_class=HTMLResponse)
-def user_ui():
-    tabs = ""
-    for k, v in MODES.items():
-        tabs += f"<button onclick=\"openMode('{k}')\">{v}</button>"
-
-    return f"""
-<html><head><meta name="viewport" content="width=device-width, initial-scale=1">
+def user():
+    return """
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
-body{{margin:0;background:#071426;color:white;font-family:Arial}}
-.wrap{{max-width:430px;margin:auto;min-height:100vh;padding:18px;box-sizing:border-box}}
-.top{{text-align:center}}.core{{width:140px;height:140px;border-radius:50%;border:3px solid #6d5dfc;display:flex;align-items:center;justify-content:center;margin:18px auto;font-size:28px;font-weight:bold;box-shadow:0 0 24px #00d084;background:#0b1d36}}
-.card{{background:#0b1d36;border:1px solid #18345a;border-radius:20px;padding:18px;margin:14px 0}}
-button{{background:#2363ff;color:white;border:0;border-radius:14px;padding:14px 16px;margin:6px;font-weight:bold}}
-.tabs{{display:flex;overflow-x:auto;white-space:nowrap}}.tabs button{{min-width:90px}}
-a{{color:#8ab4ff}}
-</style></head>
-<body><div class="wrap">
-<div class="top"><h1>KRXA 여행 통역</h1><p>사용자 A ⇄ 핸드폰 ⇄ 사용자 B</p><div class="core">KRXA</div></div>
-<div class="card"><h3>시작</h3><button onclick="openMode('travel')">여행 통역 시작</button></div>
-<div class="card"><h3>상황 선택</h3><div class="tabs">{tabs}</div></div>
-<div class="card"><h3>계정</h3><p id="me"></p><a href="/signup">가입</a> | <a href="/login">로그인</a></div>
+body{margin:0;background:#071426;color:white;font-family:Arial}
+.wrap{max-width:460px;margin:auto;height:100vh;display:flex;flex-direction:column;box-sizing:border-box}
+.header{padding:12px;text-align:center;font-size:18px;font-weight:bold}
+.sub{font-size:13px;color:#9fb3c8;margin-top:4px}
+.chat{flex:1;overflow:auto;padding:12px}
+.msg{margin:10px 0;padding:12px;border-radius:14px;line-height:1.45}
+.me{background:#163b65}
+.krxa{background:#0b1d36;border:1px solid #18345a}
+.micbar{text-align:center;padding:12px;border-top:1px solid #18345a}
+.mic{width:88px;height:88px;border-radius:50%;background:#2363ff;display:flex;align-items:center;justify-content:center;font-size:36px;margin:auto;cursor:pointer;box-shadow:0 0 22px #2363ff}
+.cards{padding:8px 12px;max-height:190px;overflow:auto}
+.card{background:#102a4d;padding:10px;margin:6px 0;border-radius:12px;font-size:14px}
+a{color:#9fd3ff;text-decoration:none}
+.status{font-size:13px;color:#00d084;margin-top:6px}
+.hiddenInput{width:100%;box-sizing:border-box;background:#07182d;color:white;border:1px solid #244a78;border-radius:12px;padding:10px;margin-top:8px}
+.row{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+.smallbtn{font-size:12px;padding:8px 10px;border:0;border-radius:10px;background:#1c4ed8;color:white}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    KRXA 여행 도우미
+    <div class="sub">자연대화 통역 + 여행 서비스</div>
+    <div id="status" class="status">LIVE</div>
+  </div>
+
+  <div id="chat" class="chat"></div>
+
+  <div id="cards" class="cards"></div>
+
+  <div class="micbar">
+    <div class="row">
+      <button class="smallbtn" onclick="speakerTest()">스피커 테스트</button>
+      <button class="smallbtn" onclick="toggleText()">텍스트 입력</button>
+    </div>
+    <textarea id="textInput" class="hiddenInput" style="display:none" placeholder="직접 입력"></textarea>
+    <button id="sendTextBtn" class="smallbtn" style="display:none" onclick="sendText()">전송</button>
+    <div class="mic" onclick="startTalk()">🎤</div>
+    <div class="sub">말하면 KRXA가 통역하고 여행 서비스를 제안합니다.</div>
+  </div>
 </div>
+
 <script>
-let uid=localStorage.getItem("krxa_user_id");
-if(!uid){{uid="guest-"+Math.random().toString(16).slice(2,8);localStorage.setItem("krxa_user_id",uid);}}
-let did=localStorage.getItem("krxa_device_id");
-if(!did){{did="device-"+Math.random().toString(16).slice(2,8);localStorage.setItem("krxa_device_id",did);}}
-document.getElementById("me").innerText="현재 ID: "+uid;
-function openMode(m){{window.open('/app?mode='+m,'_blank');}}
+let sessionId = localStorage.getItem("krxa_v58_session");
+if(!sessionId){
+  sessionId = "session-" + Math.random().toString(16).slice(2,10);
+  localStorage.setItem("krxa_v58_session", sessionId);
+}
+
+let ws = new WebSocket((location.protocol==="https:"?"wss://":"ws://") + location.host + "/ws/krxa?session_id=" + encodeURIComponent(sessionId));
+
+ws.onmessage = async (ev) => {
+  const d = JSON.parse(ev.data);
+
+  if(d.type === "init"){
+    setStatus("LIVE");
+    addMsg("krxa", "KRXA가 준비되었습니다. 마이크를 누르고 자연스럽게 말하세요.");
+  }
+
+  if(d.type === "status"){
+    setStatus(d.state);
+  }
+
+  if(d.type === "result"){
+    setStatus("LIVE");
+    showResult(d.result);
+    await playTTS(d.result.translated);
+  }
+};
+
+function setStatus(s){
+  document.getElementById("status").innerText = s;
+}
+
+function addMsg(type, text){
+  const cls = type === "me" ? "me" : "krxa";
+  document.getElementById("chat").innerHTML += "<div class='msg "+cls+"'>"+escapeHtml(text)+"</div>";
+  document.getElementById("chat").scrollTop = 999999;
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, function(m){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;","\\"":"&quot;","'":"&#039;"}[m];
+  });
+}
+
+function showResult(r){
+  addMsg("me", r.text);
+  addMsg("krxa", r.translated);
+
+  let html = "";
+  r.cards.forEach(c=>{
+    if(c.url){
+      html += "<div class='card'><a target='_blank' href='"+c.url+"'>"+escapeHtml(c.label)+"</a></div>";
+    } else if(c.text){
+      html += "<div class='card'><b>"+escapeHtml(c.label)+"</b><br>"+escapeHtml(c.text)+"</div>";
+    }
+  });
+  document.getElementById("cards").innerHTML = html;
+}
+
+function sendToKRXA(text){
+  if(!ws || ws.readyState !== 1){
+    alert("KRXA 연결 중입니다. 잠시 후 다시 시도하세요.");
+    return;
+  }
+  ws.send(JSON.stringify({text:text}));
+}
+
+async function startTalk(){
+  try{
+    setStatus("LISTENING");
+    const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+    const mr = new MediaRecorder(stream);
+    let chunks = [];
+
+    mr.ondataavailable = e => chunks.push(e.data);
+
+    mr.onstop = async () => {
+      setStatus("STT");
+      const blob = new Blob(chunks, {type:"audio/webm"});
+      const fd = new FormData();
+      fd.append("file", blob, "voice.webm");
+
+      const sr = await fetch("/api/stt", {method:"POST", body:fd});
+      const sj = await sr.json();
+
+      if(!sj.ok){
+        alert("음성 인식 실패");
+        setStatus("LIVE");
+        return;
+      }
+
+      sendToKRXA(sj.text);
+    };
+
+    mr.start();
+    setTimeout(()=>mr.stop(), 3000);
+  }catch(e){
+    alert("마이크 권한을 허용해야 합니다.");
+    setStatus("LIVE");
+  }
+}
+
+async function playTTS(text){
+  const fd = new FormData();
+  fd.append("text", text);
+  const r = await fetch("/api/tts", {method:"POST", body:fd});
+  const blob = await r.blob();
+  const url = URL.createObjectURL(blob);
+  const audio = new Audio(url);
+  audio.play();
+}
+
+async function speakerTest(){
+  await playTTS("KRXA speaker test is working.");
+}
+
+function toggleText(){
+  const t = document.getElementById("textInput");
+  const b = document.getElementById("sendTextBtn");
+  const show = t.style.display === "none";
+  t.style.display = show ? "block" : "none";
+  b.style.display = show ? "inline-block" : "none";
+}
+
+function sendText(){
+  const t = document.getElementById("textInput").value;
+  if(t.trim()){
+    sendToKRXA(t.trim());
+  }
+}
 </script>
-</body></html>
-"""
-
-@app.get("/app", response_class=HTMLResponse)
-def app_ui(mode: str = "travel", invite: str = ""):
-    mode_label = MODES.get(mode, "여행")
-    return f"""
-<html><head><meta name="viewport" content="width=device-width, initial-scale=1">
-<style>
-body{{margin:0;background:#071426;color:white;font-family:Arial}}
-.wrap{{max-width:900px;margin:auto;padding:16px}}.card{{background:#0b1d36;border:1px solid #18345a;border-radius:16px;padding:16px;margin:12px 0}}
-button{{background:#2363ff;color:white;border:0;border-radius:12px;padding:13px 16px;margin:5px;font-weight:bold}}
-input,select,textarea{{width:100%;box-sizing:border-box;background:#07182d;color:white;border:1px solid #244a78;border-radius:12px;padding:12px;margin:5px 0}}
-.core{{width:130px;height:130px;border-radius:50%;border:3px solid #6d5dfc;display:flex;align-items:center;justify-content:center;margin:18px auto;font-size:24px;font-weight:bold;box-shadow:0 0 24px #00d084}}
-.box{{background:#102a4d;padding:12px;border-radius:12px;margin:8px 0}}
-</style></head>
-<body><div class="wrap">
-<div class="card">
-<h2>KRXA {mode_label}</h2><div class="core">KRXA</div>
-<label>내 ID</label><input id="user_id">
-<label>내 언어</label><select id="language"><option value="auto">자동</option><option value="ko">한국어</option><option value="en">English</option><option value="ja">日本語</option><option value="zh">中文</option><option value="es">Español</option></select>
-<button onclick="createRoom()">초대 만들기</button><button onclick="joinInvite()">초대 입장</button><button onclick="connect()">연결 시작</button>
-<input id="invite" value="{html.escape(invite)}" placeholder="invite_id"><input id="room_id" placeholder="room_id"><input id="invite_url" placeholder="초대 주소" readonly><p id="status">대기</p>
-</div>
-<div class="card">
-<h3>대화</h3><textarea id="text">안녕하세요. 이 근처 지하철역이 어디인가요?</textarea>
-<button onclick="send()">텍스트 전송</button><button onclick="recordTranslate()">음성 통역</button>
-<div id="chat"></div><audio id="ttsAudio" controls></audio>
-</div></div>
-<script>
-let ws=null;
-let userId=localStorage.getItem("krxa_user_id") || ("guest-"+Math.random().toString(16).slice(2,8));
-let deviceId=localStorage.getItem("krxa_device_id") || ("device-"+Math.random().toString(16).slice(2,8));
-localStorage.setItem("krxa_user_id",userId);localStorage.setItem("krxa_device_id",deviceId);
-document.getElementById("user_id").value=userId;
-function log(t){{document.getElementById("chat").innerHTML+="<div class='box'>"+t+"</div>";}}
-function status(t){{document.getElementById("status").innerText=t;}}
-function uid(){{return document.getElementById("user_id").value;}}
-function lang(){{return document.getElementById("language").value;}}
-async function createRoom(){{
- localStorage.setItem("krxa_user_id",uid());
- const fd=new FormData();fd.append("user_id",uid());fd.append("mode","{mode}");
- const r=await fetch("/api/create_room",{{method:"POST",body:fd}});const j=await r.json();
- document.getElementById("room_id").value=j.room_id;document.getElementById("invite").value=j.invite_id;document.getElementById("invite_url").value=location.origin+j.invite_url;log("초대 생성: "+location.origin+j.invite_url);
-}}
-async function joinInvite(){{
- const fd=new FormData();fd.append("user_id",uid());fd.append("invite_id",document.getElementById("invite").value);fd.append("language",lang());
- const r=await fetch("/api/join",{{method:"POST",body:fd}});const j=await r.json();
- if(j.ok){{document.getElementById("room_id").value=j.room_id;log("입장 완료: "+j.room_id);}}else log("입장 실패: "+JSON.stringify(j));
-}}
-function connect(){{
- const room=document.getElementById("room_id").value;const invite=document.getElementById("invite").value;
- let url=(location.protocol==="https:"?"wss://":"ws://")+location.host+"/ws/room?user_id="+encodeURIComponent(uid())+"&language="+encodeURIComponent(lang())+"&mode={mode}";
- if(room)url+="&room_id="+encodeURIComponent(room);if(invite)url+="&invite_id="+encodeURIComponent(invite);
- ws=new WebSocket(url);
- ws.onmessage=(ev)=>{{const d=JSON.parse(ev.data);
-  if(d.type==="joined"){{document.getElementById("room_id").value=d.room_id;if(d.invite_url)document.getElementById("invite_url").value=location.origin+d.invite_url;status("연결됨: "+d.room_id);log("KRXA 연결됨 / 참여자: "+d.participants.join(", "));}}
-  if(d.type==="presence")log("참여자: "+d.participants.join(", "));
-  if(d.type==="message"){{log("<b>"+d.from+" 원문:</b> "+d.source);log("<b>KRXA 통역:</b> "+d.translated);playTTS(d.translated);}}
-  if(d.type==="sent"){{log("<b>나:</b> "+d.source);d.delivered.forEach(x=>log("<b>"+x.to+" 전달:</b> "+x.translated));}}
- }};
-}}
-function send(){{if(!ws||ws.readyState!==1){{alert("먼저 연결 시작");return;}}ws.send(JSON.stringify({{text:document.getElementById("text").value}}));}}
-async function playTTS(text){{const fd=new FormData();fd.append("text",text);const r=await fetch("/api/tts",{{method:"POST",body:fd}});const blob=await r.blob();const url=URL.createObjectURL(blob);const a=document.getElementById("ttsAudio");a.src=url;a.play();}}
-async function recordTranslate(){{const stream=await navigator.mediaDevices.getUserMedia({{audio:true}});const mr=new MediaRecorder(stream);let chunks=[];mr.ondataavailable=e=>chunks.push(e.data);mr.onstop=async()=>{{const blob=new Blob(chunks,{{type:"audio/webm"}});const fd=new FormData();fd.append("file",blob,"voice.webm");const sr=await fetch("/api/stt",{{method:"POST",body:fd}});const sj=await sr.json();document.getElementById("text").value=sj.text;send();}};mr.start();status("3초 녹음 중...");setTimeout(()=>{{mr.stop();status("녹음 완료");}},3000);}}
-</script></body></html>
+</body>
+</html>
 """
 
 @app.get("/control", response_class=HTMLResponse)
 def control():
-    state = api_state()
-
-    buttons = ""
-    for k, v in MODES.items():
-        buttons += f"<button onclick=\"location.href='/app?mode={k}'\">{v}</button>"
-
+    state = {
+        "version": "V58",
+        "sessions": SESSIONS,
+        "logs": LOGS[-100:],
+        "openai_key": bool(os.getenv("OPENAI_API_KEY"))
+    }
     return f"""
-<html><body style="background:#071426;color:white;font-family:Arial;padding:20px">
-<h1>KRXA V53 CONTROL</h1>
-<p>
-<a style="color:#8ab4ff" href="/user">USER</a> |
-<a style="color:#8ab4ff" href="/dev">DEV</a> |
-<a style="color:#8ab4ff" href="/api/state">STATE</a>
-</p>
-<h2>실행</h2>
-{buttons}
-<h2>DB 상태</h2>
+<html>
+<body style="background:#071426;color:white;font-family:Arial;padding:20px">
+<h1>KRXA V58 CONTROL</h1>
+<p><a style="color:#8ab4ff" href="/user">USER</a> | <a style="color:#8ab4ff" href="/dev">DEV</a> | <a style="color:#8ab4ff" href="/api/state">STATE</a></p>
+<h2>서비스 상태</h2>
 <pre>{html.escape(json.dumps(state, ensure_ascii=False, indent=2, default=str))}</pre>
-</body></html>
+</body>
+</html>
 """
 
 @app.get("/dev", response_class=HTMLResponse)
 def dev(path: str = ""):
     root = safe_path(path)
+
     if root.is_file():
         content = html.escape(root.read_text(encoding="utf-8", errors="ignore"))
         return f"""
-<html><body style="font-family:Arial;padding:20px">
-<h2>KRXA DEV FILE EDIT</h2><p>{html.escape(path)}</p>
-<form method="post" action="/dev/save"><input type="hidden" name="path" value="{html.escape(path)}">
-<textarea name="content" style="width:100%;height:70vh;">{content}</textarea><br><button type="submit">SAVE</button></form>
-<form method="post" action="/dev/delete"><input type="hidden" name="path" value="{html.escape(path)}"><button type="submit">DELETE</button></form>
-<p><a href="/dev">FILE LIST</a> | <a href="/control">CONTROL</a></p></body></html>
+<html>
+<body style="font-family:Arial;padding:20px">
+<h2>KRXA DEV FILE EDIT</h2>
+<p>{html.escape(path)}</p>
+<form method="post" action="/dev/save">
+<input type="hidden" name="path" value="{html.escape(path)}">
+<textarea name="content" style="width:100%;height:70vh;">{content}</textarea>
+<br><button type="submit">SAVE</button>
+</form>
+<form method="post" action="/dev/delete">
+<input type="hidden" name="path" value="{html.escape(path)}">
+<button type="submit">DELETE</button>
+</form>
+<p><a href="/dev">FILE LIST</a> | <a href="/control">CONTROL</a></p>
+</body>
+</html>
 """
+
     items = []
     for item in sorted(root.iterdir()):
         rel = str(item.relative_to(ROOT))
         label = html.escape(rel)
         icon = "[DIR]" if item.is_dir() else "[FILE]"
         items.append(f"<li><a href='/dev?path={label}'>{icon} {label}</a></li>")
+
     return f"""
-<html><body style="font-family:Arial;padding:20px">
-<h2>KRXA DEV</h2><p><a href="/user">USER</a> | <a href="/control">CONTROL</a></p>
-<h3>파일 생성</h3><form method="post" action="/dev/create"><input name="path" placeholder="new_file.py or folder/file.txt"><button type="submit">CREATE</button></form>
-<ul>{''.join(items)}</ul></body></html>
+<html>
+<body style="font-family:Arial;padding:20px">
+<h2>KRXA DEV</h2>
+<p><a href="/user">USER</a> | <a href="/control">CONTROL</a></p>
+<form method="post" action="/dev/create">
+<input name="path" placeholder="new_file.py or folder/file.txt">
+<button type="submit">CREATE</button>
+</form>
+<ul>{''.join(items)}</ul>
+</body>
+</html>
 """
 
 @app.post("/dev/save")
@@ -679,13 +558,10 @@ def dev_delete(path: str = Form(...)):
 @app.get("/verify", response_class=HTMLResponse)
 def verify():
     return """
-<h2>KRXA V53 VERIFY</h2>
+<h2>KRXA V58 VERIFY</h2>
 <ul>
 <li><a href="/health">health</a></li>
 <li><a href="/user">user</a></li>
-<li><a href="/signup">signup</a></li>
-<li><a href="/login">login</a></li>
-<li><a href="/app?mode=travel">app travel</a></li>
 <li><a href="/control">control</a></li>
 <li><a href="/dev">dev</a></li>
 <li><a href="/api/state">api/state</a></li>
