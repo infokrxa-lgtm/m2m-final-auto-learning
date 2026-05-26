@@ -107,15 +107,105 @@ function openService(service){
 def app_ui(service: str = "free"):
     page = """
 <html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body{
+    margin:0;
+    font-family:Arial;
+    background:#f5f7fb;
+}
+
+/* 상단 */
+.header{
+    padding:16px;
+    text-align:center;
+    font-weight:bold;
+    background:#0b1f3a;
+    color:white;
+}
+
+/* 대화 영역 */
+.chat{
+    height:60vh;
+    overflow-y:auto;
+    padding:10px;
+}
+
+/* 메시지 */
+.msg{
+    padding:10px;
+    margin:6px 0;
+    border-radius:10px;
+}
+
+.user{ background:#dbeafe; }
+.krxa{ background:#e5e7eb; }
+
+/* 카드 */
+.cards{
+    padding:10px;
+}
+
+.card{
+    background:white;
+    padding:12px;
+    margin:6px 0;
+    border-radius:10px;
+    box-shadow:0 2px 6px rgba(0,0,0,.1);
+}
+
+.card a{
+    text-decoration:none;
+    color:#2563eb;
+    font-weight:bold;
+}
+
+/* 입력 영역 */
+.inputBox{
+    position:fixed;
+    bottom:0;
+    width:100%;
+    background:white;
+    padding:10px;
+    border-top:1px solid #ddd;
+}
+
+textarea{
+    width:70%;
+    height:50px;
+}
+
+button{
+    padding:10px;
+    margin-left:4px;
+}
+
+/* 기능 버튼 */
+.tools{
+    font-size:12px;
+    margin-top:5px;
+}
+</style>
+</head>
+
 <body>
-<h1>__SERVICE__ 서비스</h1>
 
-<textarea id="t" style="width:300px;height:80px;" placeholder="사용자 입력 언어로 입력하세요"></textarea><br>
-<button onclick="send()">전송</button>
-<button onclick="clearMemory()">기억 초기화</button>
+<div class="header">__SERVICE__ 서비스</div>
 
-<div id="chat"></div>
-<div id="cards"></div>
+<div id="chat" class="chat"></div>
+<div id="cards" class="cards"></div>
+
+<div class="inputBox">
+    <textarea id="t" placeholder="사용자 입력 언어로 입력하세요"></textarea>
+    <button onclick="send()">전송</button>
+    <button onclick="clearMemory()">초기화</button>
+
+    <div class="tools">
+        <a href="/user">← 홈</a> |
+        <a id="historyLink" href="#" onclick="this.href='/history?session_id='+sessionId" target="_blank">기억보기</a>
+    </div>
+</div>
 
 <script>
 let sessionId = localStorage.getItem("krxa_session_id");
@@ -136,37 +226,31 @@ async function send(){
     fd.append("session_id", sessionId);
 
     let r = await fetch("/chat", {
-        method: "POST",
-        body: fd
+        method:"POST",
+        body:fd
     });
+
     let j = await r.json();
 
-    if(j.session_id){
-        sessionId = j.session_id;
-        localStorage.setItem("krxa_session_id", sessionId);
-    }
-
     let chat = document.getElementById("chat");
-    chat.innerHTML += "<div class='msg'><b>나:</b> " + text + "</div>";
-    chat.innerHTML += "<div class='msg'><b>KRXA:</b> " + j.result + "</div>";
+
+    chat.innerHTML += "<div class='msg user'>"+text+"</div>";
+    chat.innerHTML += "<div class='msg krxa'>"+j.result+"</div>";
+
+    chat.scrollTop = chat.scrollHeight;
 
     let html = "";
-    if(j.cards && j.cards.length > 0){
+    if(j.cards){
         j.cards.forEach(function(c){
             if(c.url){
-                html += "<div class='card'><a href='" + c.url + "' target='_blank'>" + c.label + "</a></div>";
+                html += "<div class='card'><a href='"+c.url+"' target='_blank'>"+c.label+"</a></div>";
             } else if(c.text){
-                html += "<div class='card'><b>" + c.label + "</b><br>" + c.text + "</div>";
+                html += "<div class='card'><b>"+c.label+"</b><br>"+c.text+"</div>";
             }
         });
     }
-    document.getElementById("cards").innerHTML = html;
 
-    let msgs = chat.querySelectorAll(".msg");
-    if(msgs.length > 8){
-        msgs[0].remove();
-        msgs[1].remove();
-    }
+    document.getElementById("cards").innerHTML = html;
 }
 
 async function clearMemory(){
@@ -174,18 +258,15 @@ async function clearMemory(){
     fd.append("session_id", sessionId);
 
     await fetch("/history/clear", {
-        method: "POST",
-        body: fd
+        method:"POST",
+        body:fd
     });
 
     document.getElementById("chat").innerHTML = "";
     document.getElementById("cards").innerHTML = "";
-    alert("KRXA 기억을 초기화했습니다.");
 }
 </script>
 
-<br><a href="/user">← 사용자 화면으로 돌아가기</a>
-<br><a id="historyLink" href="#" onclick="this.href='/history?session_id='+sessionId" target="_blank">기억 보기</a>
 </body>
 </html>
 """
