@@ -2,13 +2,18 @@ from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from fastapi import Form
 from krxa_engine import process
+from krxa_travel import get_cards
 
 
 app = FastAPI()
 @app.post("/chat")
 def chat(text: str = Form(...)):
     result = process(text)
-    return {"result": result}
+    cards = get_cards(text)
+    return {
+        "result": result,
+        "cards": cards
+    }
 @app.get("/")
 def root():
     return {"ok": True, "version": "V60"}
@@ -35,19 +40,35 @@ def app_ui(service: str = "free"):
 
     <div id="out"></div>
 
-    <script>
-    async function send(){{
-        let text = document.getElementById("t").value;
+<script>
+async function send(){
+    let text = document.getElementById("t").value;
 
-        let fd = new FormData();
-        fd.append("text", text);
+    let fd = new FormData();
+    fd.append("text", text);
 
-        let r = await fetch("/chat", {{
-            method:"POST",
-            body:fd
-        }});
+    let r = await fetch("/chat", {
+        method:"POST",
+        body:fd
+    });
 
-        let j = await r.json();
+    let j = await r.json();
+
+    document.getElementById("out").innerHTML += "<p>"+j.result+"</p>";
+
+    if(j.cards){
+        j.cards.forEach(c=>{
+            if(c.url){
+                document.getElementById("out").innerHTML +=
+                    "<a href='"+c.url+"' target='_blank'>"+c.label+"</a><br>";
+            }else{
+                document.getElementById("out").innerHTML +=
+                    "<p>"+c.text+"</p>";
+            }
+        });
+    }
+}
+</script>
 
         document.getElementById("out").innerHTML += "<p>"+j.result+"</p>";
     }}
