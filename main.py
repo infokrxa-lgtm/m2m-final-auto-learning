@@ -90,19 +90,15 @@ button{margin-top:5px;padding:10px;width:100%;border:none;border-radius:10px;bac
 </head>
 <body>
 <div class="wrap">
+  <div class="header">__SERVICE__ 서비스</div>
 
-<div class="header">
-__SERVICE__ 서비스
-</div>
+  <div id="chat" class="chat"></div>
+  <div id="cards"></div>
 
-<div id="chat" class="chat"></div>
-<div id="cards"></div>
-
-<div class="input">
-<textarea id="t" placeholder="말하거나 입력하세요"></textarea>
-<button onclick="send()">전송</button>
-</div>
-
+  <div class="input">
+    <textarea id="t" placeholder="말하거나 입력하세요"></textarea>
+    <button onclick="send()">전송</button>
+  </div>
 </div>
 
 <script>
@@ -120,7 +116,6 @@ async function send(){
  let j = await r.json();
 
  let chat = document.getElementById("chat");
-
  chat.innerHTML += "<div class='msg me'>"+text+"</div>";
  chat.innerHTML += "<div class='msg bot'>"+j.result+"</div>";
 
@@ -128,7 +123,7 @@ async function send(){
  cardsDiv.innerHTML = "";
 
  if(j.cards){
-  j.cards.forEach(c=>{
+  j.cards.forEach(function(c){
    if(c.url){
     cardsDiv.innerHTML += "<div class='card'><a href='"+c.url+"' target='_blank'>"+c.label+"</a></div>";
    }else{
@@ -140,7 +135,6 @@ async function send(){
  chat.scrollTop = chat.scrollHeight;
 }
 </script>
-
 </body>
 </html>
 """
