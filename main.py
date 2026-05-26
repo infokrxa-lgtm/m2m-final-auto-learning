@@ -1,13 +1,11 @@
 import os, json, html, uuid, time, shutil
 from pathlib import Path
 from tempfile import NamedTemporaryFile
-
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, UploadFile, File, Form
 from fastapi.responses import HTMLResponse, Response, RedirectResponse
 from openai import OpenAI
 
-app = FastAPI(title="KRXA V58 Natural Travel Service")
-
+app = FastAPI(title="KRXA V59 Travel Service First")
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 ROOT = Path(".").resolve()
@@ -21,30 +19,37 @@ TTS_MODEL = os.getenv("OPENAI_TTS_MODEL", "gpt-4o-mini-tts")
 SESSIONS = {}
 LOGS = []
 
-INVITE_PROMPT = """
-[KRXA V58]
+SERVICES = {
+    "food": ("맛집 찾기", "🍴"),
+    "map": ("길찾기", "📍"),
+    "hotel": ("숙소/체크인", "🏨"),
+    "taxi": ("택시/이동", "🚕"),
+    "shopping": ("쇼핑/결제", "🛍"),
+    "emergency": ("긴급 도움", "🚨"),
+    "airport": ("공항/비행", "✈️"),
+    "free": ("그냥 말하기", "🎤")
+}
 
-역할:
-- KRXA는 자연대화 기반 여행 서비스이다.
-- 통역은 기본 기능이다.
-- 여행 중 필요한 서비스를 자연스럽게 제공한다.
-- 내부 AI 엔진은 사용자에게 노출되지 않는다.
+SYSTEM_PROMPT = """
+KRXA is a travel service interface.
+The visible product is travel help.
+The hidden engine is natural speech-to-speech interpretation.
 
-규칙:
-1. 대화 흐름을 유지한다.
-2. 이전 history를 반영한다.
-3. 입력 언어를 자동 감지한다.
-4. 같은 언어면 자연스럽게 유지한다.
-5. 다른 언어면 상대가 이해할 수 있게 자연스럽게 통역한다.
-6. 설명하지 말고 사용자에게 바로 보여줄 말만 출력한다.
-7. 여행 상황이면 필요한 행동을 짧게 돕는다.
+Rules:
+- Do not say you are ChatGPT.
+- Do not explain.
+- Keep natural conversation flow.
+- Translate naturally when languages differ.
+- If same language, keep it natural.
+- Help the travel situation directly.
+- Output only what the user or counterpart should hear.
 """
-
-def new_id(prefix):
-    return f"{prefix}-{uuid.uuid4().hex[:8]}"
 
 def now():
     return time.strftime("%Y-%m-%d %H:%M:%S")
+
+def new_id(prefix):
+    return f"{prefix}-{uuid.uuid4().hex[:8]}"
 
 def log(kind, msg):
     LOGS.append({"time": now(), "kind": kind, "msg": msg})
@@ -68,13 +73,13 @@ def load_history(session_id):
     except Exception:
         return []
 
-def save_history(session_id, user_text, krxa_text, intent, cards):
+def save_history(session_id, user_text, krxa_text, service, cards):
     h = load_history(session_id)
     h.append({
         "time": now(),
         "user": user_text,
         "krxa": krxa_text,
-        "intent": intent,
+        "service": service,
         "cards": cards
     })
     history_file(session_id).write_text(
@@ -82,102 +87,82 @@ def save_history(session_id, user_text, krxa_text, intent, cards):
         encoding="utf-8"
     )
 
-def analyze_intent(text):
+def detect_service(text, service="free"):
     t = text.lower()
-
-    if any(x in t for x in ["맛집", "식당", "restaurant", "food", "eat", "밥", "카페", "coffee"]):
+    if service != "free":
+        return service
+    if any(x in t for x in ["맛집", "식당", "restaurant", "food", "카페", "coffee"]):
         return "food"
-    if any(x in t for x in ["어디", "길", "지도", "where", "direction", "station", "역", "택시"]):
+    if any(x in t for x in ["어디", "길", "지도", "where", "direction", "station", "역"]):
         return "map"
-    if any(x in t for x in ["가격", "얼마", "price", "cost", "money", "환율", "exchange"]):
-        return "price"
-    if any(x in t for x in ["아파", "병원", "약국", "help", "emergency", "hospital", "pharmacy"]):
-        return "emergency"
-    if any(x in t for x in ["예약", "reservation", "book", "booking"]):
-        return "reservation"
-    if any(x in t for x in ["호텔", "숙소", "check in", "체크인"]):
+    if any(x in t for x in ["호텔", "숙소", "체크인", "check in"]):
         return "hotel"
-    if any(x in t for x in ["공항", "airport", "flight", "비행기", "게이트"]):
-        return "airport"
-    if any(x in t for x in ["쇼핑", "shopping", "선물", "souvenir", "면세"]):
+    if any(x in t for x in ["택시", "taxi", "uber", "이동"]):
+        return "taxi"
+    if any(x in t for x in ["가격", "얼마", "결제", "shopping", "shop", "price"]):
         return "shopping"
+    if any(x in t for x in ["아파", "병원", "약국", "help", "emergency", "hospital"]):
+        return "emergency"
+    if any(x in t for x in ["공항", "비행기", "airport", "flight", "gate"]):
+        return "airport"
+    return "free"
 
-    return "general"
-
-def build_cards(intent, text):
+def build_cards(service, text):
     q = text.replace(" ", "+")
-    cards = []
-
-    if intent == "food":
-        cards = [
-            {"label": "🍴 맛집 찾기", "url": f"https://www.google.com/maps/search/restaurants+near+me+{q}"},
-            {"label": "☕ 카페 찾기", "url": "https://www.google.com/maps/search/cafe+near+me"},
-            {"label": "📞 예약 문장", "text": "Can I make a reservation?"},
-            {"label": "👍 추천 질문", "text": "What do you recommend here?"}
+    if service == "food":
+        return [
+            {"label": "주변 맛집 열기", "url": f"https://www.google.com/maps/search/restaurants+near+me+{q}"},
+            {"label": "카페 찾기", "url": "https://www.google.com/maps/search/cafe+near+me"},
+            {"label": "예약 문장", "text": "Can I make a reservation?"},
+            {"label": "추천 질문", "text": "What do you recommend here?"}
         ]
-
-    elif intent == "map":
-        cards = [
-            {"label": "📍 지도 열기", "url": f"https://www.google.com/maps/search/{q}"},
-            {"label": "🚇 가까운 역 찾기", "url": "https://www.google.com/maps/search/subway+station+near+me"},
-            {"label": "🚕 택시 문장", "text": "Please take me here."},
-            {"label": "🧭 길 묻기", "text": "How can I get there?"}
+    if service == "map":
+        return [
+            {"label": "지도 열기", "url": f"https://www.google.com/maps/search/{q}"},
+            {"label": "가까운 역", "url": "https://www.google.com/maps/search/station+near+me"},
+            {"label": "길 묻기", "text": "How can I get there?"}
         ]
-
-    elif intent == "price":
-        cards = [
-            {"label": "💳 가격 질문", "text": "How much is this?"},
-            {"label": "💳 카드 결제", "text": "Can I pay by card?"},
-            {"label": "💱 환율 검색", "url": "https://www.google.com/search?q=exchange+rate"}
+    if service == "hotel":
+        return [
+            {"label": "체크인 문장", "text": "I would like to check in."},
+            {"label": "예약 확인", "text": "I have a reservation under this name."},
+            {"label": "근처 숙소", "url": "https://www.google.com/maps/search/hotel+near+me"}
         ]
-
-    elif intent == "emergency":
-        cards = [
-            {"label": "🚨 병원 찾기", "url": "https://www.google.com/maps/search/hospital+near+me"},
-            {"label": "💊 약국 찾기", "url": "https://www.google.com/maps/search/pharmacy+near+me"},
-            {"label": "🆘 긴급 문장", "text": "I need help. Please call emergency services."}
+    if service == "taxi":
+        return [
+            {"label": "목적지 보여주기", "url": f"https://www.google.com/maps/search/{q}"},
+            {"label": "택시 문장", "text": "Please take me here."},
+            {"label": "요금 질문", "text": "How much will it cost?"}
         ]
-
-    elif intent == "reservation":
-        cards = [
-            {"label": "📞 예약 문장", "text": "I would like to make a reservation."},
-            {"label": "⏰ 시간 확인", "text": "What time is available?"},
-            {"label": "👥 인원 말하기", "text": "A table for two, please."}
+    if service == "shopping":
+        return [
+            {"label": "가격 질문", "text": "How much is this?"},
+            {"label": "카드 결제", "text": "Can I pay by card?"},
+            {"label": "환율 검색", "url": "https://www.google.com/search?q=exchange+rate"}
         ]
-
-    elif intent == "hotel":
-        cards = [
-            {"label": "🏨 체크인 문장", "text": "I would like to check in."},
-            {"label": "📄 예약 확인", "text": "I have a reservation under this name."},
-            {"label": "📍 호텔 주변", "url": "https://www.google.com/maps/search/hotel+near+me"}
+    if service == "emergency":
+        return [
+            {"label": "병원 찾기", "url": "https://www.google.com/maps/search/hospital+near+me"},
+            {"label": "약국 찾기", "url": "https://www.google.com/maps/search/pharmacy+near+me"},
+            {"label": "긴급 문장", "text": "I need help. Please call emergency services."}
         ]
-
-    elif intent == "airport":
-        cards = [
-            {"label": "✈️ 공항 지도", "url": "https://www.google.com/maps/search/airport+near+me"},
-            {"label": "🛂 게이트 질문", "text": "Where is my boarding gate?"},
-            {"label": "🧳 수하물 질문", "text": "Where can I pick up my baggage?"}
+    if service == "airport":
+        return [
+            {"label": "공항 지도", "url": "https://www.google.com/maps/search/airport+near+me"},
+            {"label": "게이트 질문", "text": "Where is my boarding gate?"},
+            {"label": "수하물 질문", "text": "Where can I pick up my baggage?"}
         ]
+    return [
+        {"label": "천천히 말하기", "text": "Please speak slowly."},
+        {"label": "다시 말하기", "text": "Could you say that again?"}
+    ]
 
-    elif intent == "shopping":
-        cards = [
-            {"label": "🛍 쇼핑 장소", "url": "https://www.google.com/maps/search/shopping+near+me"},
-            {"label": "🎁 선물 추천", "text": "What is a popular local gift?"},
-            {"label": "💳 결제 질문", "text": "Can I pay by card?"}
-        ]
-
-    else:
-        cards = [
-            {"label": "🔁 다시 말하기", "text": "Could you say that again, please?"},
-            {"label": "🐢 천천히 말하기", "text": "Please speak slowly."}
-        ]
-
-    return cards
-
-def krxa_process(text, session_id):
+def krxa_process(text, session_id, service="free"):
     history = load_history(session_id)[-12:]
+    active_service = detect_service(text, service)
 
-    messages = [{"role": "system", "content": INVITE_PROMPT}]
+    messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+    messages.append({"role": "system", "content": f"Current travel service: {active_service}"})
 
     for h in history:
         messages.append({"role": "user", "content": h.get("user", "")})
@@ -191,45 +176,34 @@ def krxa_process(text, session_id):
     )
 
     result = r.choices[0].message.content or text
-    intent = analyze_intent(text)
-    cards = build_cards(intent, text)
-
-    save_history(session_id, text, result, intent, cards)
-    log("krxa", f"{session_id}: {intent}")
+    cards = build_cards(active_service, text)
+    save_history(session_id, text, result, active_service, cards)
+    log("krxa", f"{session_id}: {active_service}")
 
     return {
-        "text": text,
-        "translated": result,
-        "intent": intent,
+        "source": text,
+        "answer": result,
+        "service": active_service,
         "cards": cards
     }
 
 @app.get("/")
 def root():
-    return {"ok": True, "version": "V58", "routes": ["/user", "/control", "/dev", "/health"]}
+    return {"ok": True, "version": "V59", "routes": ["/user", "/app", "/control", "/dev"]}
 
 @app.get("/health")
 def health():
-    return {"ok": True, "version": "V58-NATURAL-TRAVEL"}
+    return {"ok": True, "version": "V59"}
 
 @app.get("/api/state")
-def api_state():
+def state():
     return {
         "ok": True,
-        "version": "V58",
+        "version": "V59",
         "sessions": len(SESSIONS),
         "logs": LOGS[-50:],
-        "storage": str(DATA),
         "openai_key": bool(os.getenv("OPENAI_API_KEY"))
     }
-
-@app.get("/history")
-def history(session_id: str = "default"):
-    return {"ok": True, "session_id": session_id, "history": load_history(session_id)}
-
-@app.post("/api/text")
-def api_text(text: str = Form(...), session_id: str = Form("default")):
-    return {"ok": True, "result": krxa_process(text, session_id)}
 
 @app.post("/api/stt")
 async def stt(file: UploadFile = File(...)):
@@ -237,13 +211,9 @@ async def stt(file: UploadFile = File(...)):
     with NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
         tmp.write(await file.read())
         tmp_path = tmp.name
-
     try:
         with open(tmp_path, "rb") as f:
-            tr = client.audio.transcriptions.create(
-                model=STT_MODEL,
-                file=f
-            )
+            tr = client.audio.transcriptions.create(model=STT_MODEL, file=f)
         return {"ok": True, "text": tr.text}
     finally:
         try:
@@ -264,205 +234,246 @@ def tts(text: str = Form(...)):
 async def ws_krxa(ws: WebSocket):
     await ws.accept()
     session_id = ws.query_params.get("session_id") or new_id("session")
-    SESSIONS[session_id] = {"created": now(), "state": "LIVE"}
+    service = ws.query_params.get("service", "free")
 
-    await ws.send_json({"type": "init", "session_id": session_id, "state": "LIVE"})
+    SESSIONS[session_id] = {"created": now(), "service": service, "state": "LIVE"}
+    await ws.send_json({"type": "init", "session_id": session_id, "service": service})
 
     try:
         while True:
             data = await ws.receive_json()
             text = data.get("text", "")
+            service = data.get("service", service)
             if not text:
                 continue
-
             await ws.send_json({"type": "status", "state": "THINKING"})
-            result = krxa_process(text, session_id)
-            await ws.send_json({"type": "result", "result": result, "state": "LIVE"})
-
+            result = krxa_process(text, session_id, service)
+            await ws.send_json({"type": "result", "result": result})
     except WebSocketDisconnect:
         SESSIONS[session_id]["state"] = "OFF"
-        log("disconnect", session_id)
 
 @app.get("/user", response_class=HTMLResponse)
 def user():
-    return """
+    service_cards = ""
+    for key, value in SERVICES.items():
+        label, icon = value
+        if key == "free":
+            continue
+        service_cards += f"""
+        <div class="service" onclick="openService('{key}')">
+          <div class="icon">{icon}</div>
+          <div>{label}</div>
+        </div>
+        """
+
+    return f"""
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
-body{margin:0;background:#071426;color:white;font-family:Arial}
-.wrap{max-width:460px;margin:auto;height:100vh;display:flex;flex-direction:column;box-sizing:border-box}
-.header{padding:12px;text-align:center;font-size:18px;font-weight:bold}
-.sub{font-size:13px;color:#9fb3c8;margin-top:4px}
-.chat{flex:1;overflow:auto;padding:12px}
-.msg{margin:10px 0;padding:12px;border-radius:14px;line-height:1.45}
-.me{background:#163b65}
-.krxa{background:#0b1d36;border:1px solid #18345a}
-.micbar{text-align:center;padding:12px;border-top:1px solid #18345a}
-.mic{width:88px;height:88px;border-radius:50%;background:#2363ff;display:flex;align-items:center;justify-content:center;font-size:36px;margin:auto;cursor:pointer;box-shadow:0 0 22px #2363ff}
-.cards{padding:8px 12px;max-height:190px;overflow:auto}
-.card{background:#102a4d;padding:10px;margin:6px 0;border-radius:12px;font-size:14px}
-a{color:#9fd3ff;text-decoration:none}
-.status{font-size:13px;color:#00d084;margin-top:6px}
-.hiddenInput{width:100%;box-sizing:border-box;background:#07182d;color:white;border:1px solid #244a78;border-radius:12px;padding:10px;margin-top:8px}
-.row{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
-.smallbtn{font-size:12px;padding:8px 10px;border:0;border-radius:10px;background:#1c4ed8;color:white}
+body{{margin:0;background:#f7f9fc;color:#0b1220;font-family:Arial}}
+.wrap{{max-width:460px;margin:auto;min-height:100vh;padding:18px;box-sizing:border-box}}
+.top{{display:flex;justify-content:space-between;align-items:center}}
+.logo{{font-size:26px;font-weight:800}}
+.hero{{margin:18px 0;padding:22px;border-radius:26px;background:linear-gradient(135deg,#1f6bff,#12c7a4);color:white}}
+.hero h1{{font-size:28px;margin:0 0 8px}}
+.quick{{display:flex;gap:10px;margin-top:18px}}
+.quick button{{flex:1;border:0;border-radius:18px;padding:16px;background:white;color:#1f4bd8;font-weight:bold}}
+.grid{{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}}
+.service{{background:white;border-radius:20px;padding:18px;text-align:center;box-shadow:0 8px 22px rgba(0,0,0,.08);cursor:pointer}}
+.icon{{font-size:30px;margin-bottom:8px}}
+.footer{{position:sticky;bottom:0;background:#f7f9fc;padding:12px 0;text-align:center}}
+.mic{{width:78px;height:78px;border-radius:50%;border:0;background:#2363ff;color:white;font-size:34px;box-shadow:0 10px 28px rgba(35,99,255,.4)}}
+.small{{font-size:13px;color:#667}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="logo">KRXA</div>
+    <div class="small">여행 도우미</div>
+  </div>
+
+  <div class="hero">
+    <h1>무엇을 도와드릴까요?</h1>
+    <div>여행 서비스가 먼저, 통역은 자연스럽게 이어집니다.</div>
+    <div class="quick">
+      <button onclick="openService('food')">맛집</button>
+      <button onclick="openService('map')">길찾기</button>
+    </div>
+  </div>
+
+  <h3>여행 서비스</h3>
+  <div class="grid">{service_cards}</div>
+
+  <div class="footer">
+    <button class="mic" onclick="openService('free')">🎤</button>
+    <div class="small">그냥 말해도 KRXA가 알아서 도와줍니다</div>
+  </div>
+</div>
+
+<script>
+function openService(s){{
+  window.location.href = "/app?service=" + s;
+}}
+</script>
+</body>
+</html>
+"""
+
+@app.get("/app", response_class=HTMLResponse)
+def app(service: str = "free"):
+    label, icon = SERVICES.get(service, SERVICES["free"])
+
+    return f"""
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body{{margin:0;background:#f7f9fc;color:#0b1220;font-family:Arial}}
+.wrap{{max-width:460px;margin:auto;height:100vh;display:flex;flex-direction:column}}
+.header{{padding:16px;background:white;border-bottom:1px solid #eee;display:flex;align-items:center;gap:12px}}
+.back{{font-size:24px;cursor:pointer}}
+.title{{font-size:20px;font-weight:800}}
+.status{{margin-left:auto;font-size:12px;color:#00a86b}}
+.chat{{flex:1;overflow:auto;padding:14px}}
+.msg{{padding:14px;border-radius:18px;margin:10px 0;line-height:1.45}}
+.me{{background:#dbeafe;margin-left:45px}}
+.krxa{{background:white;border:1px solid #eee;margin-right:35px}}
+.cards{{padding:0 14px 8px;max-height:210px;overflow:auto}}
+.card{{background:white;padding:13px;border-radius:16px;margin:8px 0;box-shadow:0 5px 14px rgba(0,0,0,.06)}}
+.card a{{color:#2363ff;text-decoration:none;font-weight:bold}}
+.bottom{{padding:12px;background:white;border-top:1px solid #eee;text-align:center}}
+.mic{{width:86px;height:86px;border-radius:50%;border:0;background:#2363ff;color:white;font-size:36px;box-shadow:0 12px 28px rgba(35,99,255,.4)}}
+.tools{{display:flex;justify-content:center;gap:8px;margin-bottom:8px}}
+.tools button{{border:0;border-radius:12px;padding:10px;background:#eef3ff;color:#2363ff;font-weight:bold}}
+textarea{{width:100%;box-sizing:border-box;border:1px solid #ddd;border-radius:14px;padding:10px;display:none}}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="header">
-    KRXA 여행 도우미
-    <div class="sub">자연대화 통역 + 여행 서비스</div>
+    <div class="back" onclick="location.href='/user'">‹</div>
+    <div class="title">{icon} {label}</div>
     <div id="status" class="status">LIVE</div>
   </div>
 
-  <div id="chat" class="chat"></div>
+  <div id="chat" class="chat">
+    <div class="msg krxa">어떤 도움이 필요하세요? 말하면 제가 자연스럽게 연결해드릴게요.</div>
+  </div>
 
   <div id="cards" class="cards"></div>
 
-  <div class="micbar">
-    <div class="row">
-      <button class="smallbtn" onclick="speakerTest()">스피커 테스트</button>
-      <button class="smallbtn" onclick="toggleText()">텍스트 입력</button>
+  <div class="bottom">
+    <div class="tools">
+      <button onclick="speakerTest()">스피커</button>
+      <button onclick="toggleText()">텍스트</button>
     </div>
-    <textarea id="textInput" class="hiddenInput" style="display:none" placeholder="직접 입력"></textarea>
-    <button id="sendTextBtn" class="smallbtn" style="display:none" onclick="sendText()">전송</button>
-    <div class="mic" onclick="startTalk()">🎤</div>
-    <div class="sub">말하면 KRXA가 통역하고 여행 서비스를 제안합니다.</div>
+    <textarea id="textInput" placeholder="직접 입력"></textarea>
+    <button id="sendBtn" style="display:none" onclick="sendText()">전송</button>
+    <br>
+    <button class="mic" onclick="recordVoice()">🎤</button>
+    <div style="font-size:13px;color:#667;margin-top:6px">말하면 통역과 여행 서비스가 함께 작동합니다</div>
   </div>
 </div>
 
 <script>
-let sessionId = localStorage.getItem("krxa_v58_session");
-if(!sessionId){
+let sessionId = localStorage.getItem("krxa_v59_session");
+if(!sessionId){{
   sessionId = "session-" + Math.random().toString(16).slice(2,10);
-  localStorage.setItem("krxa_v58_session", sessionId);
-}
+  localStorage.setItem("krxa_v59_session", sessionId);
+}}
+let service = "{service}";
+let ws = new WebSocket((location.protocol==="https:"?"wss://":"ws://") + location.host + "/ws/krxa?session_id=" + encodeURIComponent(sessionId) + "&service=" + service);
 
-let ws = new WebSocket((location.protocol==="https:"?"wss://":"ws://") + location.host + "/ws/krxa?session_id=" + encodeURIComponent(sessionId));
-
-ws.onmessage = async (ev) => {
+ws.onmessage = async (ev) => {{
   const d = JSON.parse(ev.data);
-
-  if(d.type === "init"){
-    setStatus("LIVE");
-    addMsg("krxa", "KRXA가 준비되었습니다. 마이크를 누르고 자연스럽게 말하세요.");
-  }
-
-  if(d.type === "status"){
-    setStatus(d.state);
-  }
-
-  if(d.type === "result"){
+  if(d.type === "status") setStatus(d.state);
+  if(d.type === "result"){{
     setStatus("LIVE");
     showResult(d.result);
-    await playTTS(d.result.translated);
-  }
-};
+    await playTTS(d.result.answer);
+  }}
+}};
 
-function setStatus(s){
-  document.getElementById("status").innerText = s;
-}
+function setStatus(s){{ document.getElementById("status").innerText = s; }}
 
-function addMsg(type, text){
-  const cls = type === "me" ? "me" : "krxa";
-  document.getElementById("chat").innerHTML += "<div class='msg "+cls+"'>"+escapeHtml(text)+"</div>";
-  document.getElementById("chat").scrollTop = 999999;
-}
+function esc(s){{
+  return String(s).replace(/[&<>"']/g, m => ({{"&":"&amp;","<":"&lt;",">":"&gt;","\\"":"&quot;","'":"&#039;"}}[m]));
+}}
 
-function escapeHtml(s){
-  return String(s).replace(/[&<>"']/g, function(m){
-    return {"&":"&amp;","<":"&lt;",">":"&gt;","\\"":"&quot;","'":"&#039;"}[m];
-  });
-}
+function addMsg(cls, text){{
+  const chat = document.getElementById("chat");
+  chat.innerHTML += "<div class='msg "+cls+"'>" + esc(text) + "</div>";
+  chat.scrollTop = 999999;
+}}
 
-function showResult(r){
-  addMsg("me", r.text);
-  addMsg("krxa", r.translated);
+function showResult(r){{
+  addMsg("me", r.source);
+  addMsg("krxa", r.answer);
 
   let html = "";
-  r.cards.forEach(c=>{
-    if(c.url){
-      html += "<div class='card'><a target='_blank' href='"+c.url+"'>"+escapeHtml(c.label)+"</a></div>";
-    } else if(c.text){
-      html += "<div class='card'><b>"+escapeHtml(c.label)+"</b><br>"+escapeHtml(c.text)+"</div>";
-    }
-  });
+  r.cards.forEach(c => {{
+    if(c.url) html += "<div class='card'><a target='_blank' href='"+c.url+"'>"+esc(c.label)+"</a></div>";
+    else html += "<div class='card'><b>"+esc(c.label)+"</b><br>"+esc(c.text)+"</div>";
+  }});
   document.getElementById("cards").innerHTML = html;
-}
+}}
 
-function sendToKRXA(text){
-  if(!ws || ws.readyState !== 1){
-    alert("KRXA 연결 중입니다. 잠시 후 다시 시도하세요.");
-    return;
-  }
-  ws.send(JSON.stringify({text:text}));
-}
+function sendKRXA(text){{
+  if(!ws || ws.readyState !== 1){{ alert("KRXA 연결 중입니다."); return; }}
+  ws.send(JSON.stringify({{text:text, service:service}}));
+}}
 
-async function startTalk(){
-  try{
+async function recordVoice(){{
+  try{{
     setStatus("LISTENING");
-    const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+    const stream = await navigator.mediaDevices.getUserMedia({{audio:true}});
     const mr = new MediaRecorder(stream);
     let chunks = [];
-
     mr.ondataavailable = e => chunks.push(e.data);
-
-    mr.onstop = async () => {
+    mr.onstop = async () => {{
       setStatus("STT");
-      const blob = new Blob(chunks, {type:"audio/webm"});
+      const blob = new Blob(chunks, {{type:"audio/webm"}});
       const fd = new FormData();
       fd.append("file", blob, "voice.webm");
-
-      const sr = await fetch("/api/stt", {method:"POST", body:fd});
-      const sj = await sr.json();
-
-      if(!sj.ok){
-        alert("음성 인식 실패");
-        setStatus("LIVE");
-        return;
-      }
-
-      sendToKRXA(sj.text);
-    };
-
+      const r = await fetch("/api/stt", {{method:"POST", body:fd}});
+      const j = await r.json();
+      if(j.ok) sendKRXA(j.text);
+      else alert("음성 인식 실패");
+    }};
     mr.start();
     setTimeout(()=>mr.stop(), 3000);
-  }catch(e){
+  }}catch(e){{
     alert("마이크 권한을 허용해야 합니다.");
     setStatus("LIVE");
-  }
-}
+  }}
+}}
 
-async function playTTS(text){
+async function playTTS(text){{
   const fd = new FormData();
   fd.append("text", text);
-  const r = await fetch("/api/tts", {method:"POST", body:fd});
+  const r = await fetch("/api/tts", {{method:"POST", body:fd}});
   const blob = await r.blob();
-  const url = URL.createObjectURL(blob);
-  const audio = new Audio(url);
-  audio.play();
-}
+  new Audio(URL.createObjectURL(blob)).play();
+}}
 
-async function speakerTest(){
-  await playTTS("KRXA speaker test is working.");
-}
+async function speakerTest(){{
+  await playTTS("KRXA is ready to help your trip.");
+}}
 
-function toggleText(){
+function toggleText(){{
   const t = document.getElementById("textInput");
-  const b = document.getElementById("sendTextBtn");
-  const show = t.style.display === "none";
+  const b = document.getElementById("sendBtn");
+  const show = t.style.display === "none" || t.style.display === "";
   t.style.display = show ? "block" : "none";
   b.style.display = show ? "inline-block" : "none";
-}
+}}
 
-function sendText(){
-  const t = document.getElementById("textInput").value;
-  if(t.trim()){
-    sendToKRXA(t.trim());
-  }
-}
+function sendText(){{
+  const t = document.getElementById("textInput").value.trim();
+  if(t) sendKRXA(t);
+}}
 </script>
 </body>
 </html>
@@ -471,31 +482,26 @@ function sendText(){
 @app.get("/control", response_class=HTMLResponse)
 def control():
     state = {
-        "version": "V58",
+        "version": "V59",
         "sessions": SESSIONS,
         "logs": LOGS[-100:],
         "openai_key": bool(os.getenv("OPENAI_API_KEY"))
     }
     return f"""
-<html>
-<body style="background:#071426;color:white;font-family:Arial;padding:20px">
-<h1>KRXA V58 CONTROL</h1>
+<html><body style="background:#071426;color:white;font-family:Arial;padding:20px">
+<h1>KRXA V59 CONTROL</h1>
 <p><a style="color:#8ab4ff" href="/user">USER</a> | <a style="color:#8ab4ff" href="/dev">DEV</a> | <a style="color:#8ab4ff" href="/api/state">STATE</a></p>
-<h2>서비스 상태</h2>
 <pre>{html.escape(json.dumps(state, ensure_ascii=False, indent=2, default=str))}</pre>
-</body>
-</html>
+</body></html>
 """
 
 @app.get("/dev", response_class=HTMLResponse)
 def dev(path: str = ""):
     root = safe_path(path)
-
     if root.is_file():
         content = html.escape(root.read_text(encoding="utf-8", errors="ignore"))
         return f"""
-<html>
-<body style="font-family:Arial;padding:20px">
+<html><body style="font-family:Arial;padding:20px">
 <h2>KRXA DEV FILE EDIT</h2>
 <p>{html.escape(path)}</p>
 <form method="post" action="/dev/save">
@@ -508,8 +514,7 @@ def dev(path: str = ""):
 <button type="submit">DELETE</button>
 </form>
 <p><a href="/dev">FILE LIST</a> | <a href="/control">CONTROL</a></p>
-</body>
-</html>
+</body></html>
 """
 
     items = []
@@ -520,8 +525,7 @@ def dev(path: str = ""):
         items.append(f"<li><a href='/dev?path={label}'>{icon} {label}</a></li>")
 
     return f"""
-<html>
-<body style="font-family:Arial;padding:20px">
+<html><body style="font-family:Arial;padding:20px">
 <h2>KRXA DEV</h2>
 <p><a href="/user">USER</a> | <a href="/control">CONTROL</a></p>
 <form method="post" action="/dev/create">
@@ -529,8 +533,7 @@ def dev(path: str = ""):
 <button type="submit">CREATE</button>
 </form>
 <ul>{''.join(items)}</ul>
-</body>
-</html>
+</body></html>
 """
 
 @app.post("/dev/save")
@@ -558,10 +561,11 @@ def dev_delete(path: str = Form(...)):
 @app.get("/verify", response_class=HTMLResponse)
 def verify():
     return """
-<h2>KRXA V58 VERIFY</h2>
+<h2>KRXA V59 VERIFY</h2>
 <ul>
 <li><a href="/health">health</a></li>
 <li><a href="/user">user</a></li>
+<li><a href="/app?service=food">food service</a></li>
 <li><a href="/control">control</a></li>
 <li><a href="/dev">dev</a></li>
 <li><a href="/api/state">api/state</a></li>
