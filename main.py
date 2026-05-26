@@ -29,10 +29,32 @@ def user():
 def app_ui(service: str = "free"):
     return f"""
     <h1>서비스 실행: {service}</h1>
-    <p>여기서 대화 + 통역 + 서비스 결합</p>
-    <a href="/user">← 돌아가기</a>
-    """
 
+    <textarea id="t"></textarea><br>
+    <button onclick="send()">전송</button>
+
+    <div id="out"></div>
+
+    <script>
+    async function send(){{
+        let text = document.getElementById("t").value;
+
+        let fd = new FormData();
+        fd.append("text", text);
+
+        let r = await fetch("/chat", {{
+            method:"POST",
+            body:fd
+        }});
+
+        let j = await r.json();
+
+        document.getElementById("out").innerHTML += "<p>"+j.result+"</p>";
+    }}
+    </script>
+
+    <br><a href="/user">← 돌아가기</a>
+    """
 # ---------------- CONTROL ----------------
 @app.get("/control", response_class=HTMLResponse)
 def control():
