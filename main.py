@@ -33,49 +33,45 @@ def user():
 @app.get("/app", response_class=HTMLResponse)
 def app_ui(service: str = "free"):
     return f"""
-    <h1>서비스 실행: {service}</h1>
+<h1>서비스 실행: {service}</h1>
 
-    <textarea id="t"></textarea><br>
-    <button onclick="send()">전송</button>
+<textarea id="t"></textarea><br>
+<button onclick="send()">전송</button>
 
-    <div id="out"></div>
+<div id="out"></div>
 
 <script>
-async function send(){
+async function send(){{
     let text = document.getElementById("t").value;
 
     let fd = new FormData();
     fd.append("text", text);
 
-    let r = await fetch("/chat", {
+    let r = await fetch("/chat", {{
         method:"POST",
         body:fd
-    });
+    }});
 
     let j = await r.json();
 
     document.getElementById("out").innerHTML += "<p>"+j.result+"</p>";
 
-    if(j.cards){
-        j.cards.forEach(c=>{
-            if(c.url){
+    if(j.cards){{
+        j.cards.forEach(c=>{{
+            if(c.url){{
                 document.getElementById("out").innerHTML +=
                     "<a href='"+c.url+"' target='_blank'>"+c.label+"</a><br>";
-            }else{
+            }}else{{
                 document.getElementById("out").innerHTML +=
                     "<p>"+c.text+"</p>";
-            }
-        });
-    }
-}
+            }}
+        }});
+    }}
+}}
 </script>
 
-        document.getElementById("out").innerHTML += "<p>"+j.result+"</p>";
-    }}
-    </script>
-
-    <br><a href="/user">← 돌아가기</a>
-    """
+<br><a href="/user">← 돌아가기</a>
+"""
 # ---------------- CONTROL ----------------
 @app.get("/control", response_class=HTMLResponse)
 def control():
