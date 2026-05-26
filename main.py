@@ -5,7 +5,10 @@ from krxa_engine import process
 
 
 app = FastAPI()
-
+@app.post("/chat")
+def chat(text: str = Form(...)):
+    result = process(text)
+    return {"result": result}
 @app.get("/")
 def root():
     return {"ok": True, "version": "V60"}
