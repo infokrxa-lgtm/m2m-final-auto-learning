@@ -1,184 +1,151 @@
-import os, json, html, uuid, time
+import os, json, uuid, time
 from pathlib import Path
-from fastapi import FastAPI, Form
-from fastapi.responses import HTMLResponse, RedirectResponse
-from pydantic import BaseModel
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi.responses import HTMLResponse
 from openai import OpenAI
 
-app = FastAPI(title="KRXA V40")
+app = FastAPI(title="KRXA V41 REALTIME")
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-DATA = Path("storage")
-DATA.mkdir(exist_ok=True)
-
+# ------------------------
+# MEMORY
+# ------------------------
 SESSIONS = {}
 ROOMS = {}
-WAITING = []
 
-# --------------------------
-# STATE
-# --------------------------
+# ------------------------
+# SESSION / ROOM
+# ------------------------
 def create_session():
-    sid = "user-" + uuid.uuid4().hex[:8]
+    sid = "user-" + uuid.uuid4().hex[:6]
     SESSIONS[sid] = {
-        "state": "INIT",
         "room": None,
-        "last": time.time()
+        "ws": None
     }
     return sid
 
-def join_queue(sid):
-    if sid not in WAITING:
-        WAITING.append(sid)
-        SESSIONS[sid]["state"] = "QUEUE"
+WAITING = []
+
+def match_user(sid):
+    WAITING.append(sid)
 
     if len(WAITING) >= 2:
         a = WAITING.pop(0)
         b = WAITING.pop(0)
 
         rid = "room-" + uuid.uuid4().hex[:6]
-        ROOMS[rid] = {
-            "users": [a, b],
-            "messages": []
-        }
+        ROOMS[rid] = [a, b]
 
         SESSIONS[a]["room"] = rid
         SESSIONS[b]["room"] = rid
-        SESSIONS[a]["state"] = "CONNECTED"
-        SESSIONS[b]["state"] = "CONNECTED"
 
-# --------------------------
-# API
-# --------------------------
-class Msg(BaseModel):
-    session_id: str
-    text: str
+        return rid
+    return None
 
-@app.get("/api/join")
-def api_join():
-    sid = create_session()
-    join_queue(sid)
-    return {"session_id": sid}
+# ------------------------
+# ROOT
+# ------------------------
+@app.get("/")
+def root():
+    return {"ok": True, "version": "V41"}
 
-@app.get("/api/state")
-def api_state(session_id: str):
-    return SESSIONS.get(session_id, {})
-
-@app.post("/api/send")
-def api_send(m: Msg):
-    sid = m.session_id
-    rid = SESSIONS.get(sid, {}).get("room")
-
-    if not rid:
-        return {"error": "no room"}
-
-    users = ROOMS[rid]["users"]
-    target = users[0] if users[1] == sid else users[1]
-
-    # GPT 번역
-    r = client.chat.completions.create(
-        model="gpt-4.1-mini",
-        messages=[{"role":"user","content":m.text}]
-    )
-    translated = r.choices[0].message.content
-
-    msg = {
-        "from": sid,
-        "to": target,
-        "text": m.text,
-        "translated": translated,
-        "time": time.time()
-    }
-
-    ROOMS[rid]["messages"].append(msg)
-
-    return {"ok": True}
-
-@app.get("/api/poll")
-def api_poll(session_id: str):
-    rid = SESSIONS.get(session_id, {}).get("room")
-    if not rid:
-        return {"messages":[]}
-
-    msgs = [m for m in ROOMS[rid]["messages"] if m["to"] == session_id]
-    return {"messages": msgs}
-
-# --------------------------
+# ------------------------
 # USER UI
-# --------------------------
+# ------------------------
 @app.get("/user", response_class=HTMLResponse)
 def user():
     return """
-<h2>KRXA V40 USER</h2>
-<button onclick="join()">입장</button>
+<h2>KRXA V41 REALTIME</h2>
+<button onclick="connect()">연결 시작</button>
 <p id="status"></p>
+
 <div id="chat"></div>
-<input id="msg"><button onclick="send()">전송</button>
+
+<input id="msg">
+<button onclick="send()">전송</button>
 
 <script>
-let sid=null
+let ws;
+let sid=null;
 
-async function join(){
-  let r=await fetch('/api/join')
-  let j=await r.json()
-  sid=j.session_id
-  document.getElementById('status').innerText="세션:"+sid
-  setInterval(poll,1000)
+function log(t){
+  document.getElementById("chat").innerHTML += "<p>"+t+"</p>";
 }
 
-async function send(){
-  let t=document.getElementById('msg').value
-  await fetch('/api/send',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({session_id:sid,text:t})
-  })
+function connect(){
+  ws = new WebSocket("wss://" + location.host + "/ws");
+
+  ws.onmessage = (e)=>{
+    let d = JSON.parse(e.data);
+
+    if(d.type==="init"){
+      sid=d.sid;
+      document.getElementById("status").innerText="세션:"+sid;
+    }
+
+    if(d.type==="match"){
+      log("상대 연결됨");
+    }
+
+    if(d.type==="msg"){
+      log("<b>상대:</b> "+d.text);
+    }
+  };
 }
 
-async function poll(){
-  let r=await fetch('/api/poll?session_id='+sid)
-  let j=await r.json()
-  let div=document.getElementById('chat')
-  j.messages.forEach(m=>{
-    div.innerHTML += "<p><b>상대:</b>"+m.translated+"</p>"
-  })
+function send(){
+  let t=document.getElementById("msg").value;
+  log("<b>나:</b> "+t);
+  ws.send(JSON.stringify({text:t}));
 }
 </script>
 """
 
-# --------------------------
-# ADMIN
-# --------------------------
-@app.get("/admin", response_class=HTMLResponse)
-def admin():
-    return f"""
-<h2>ADMIN</h2>
-<pre>{json.dumps(SESSIONS, indent=2)}</pre>
-<pre>{json.dumps(ROOMS, indent=2)}</pre>
-"""
+# ------------------------
+# WEBSOCKET
+# ------------------------
+@app.websocket("/ws")
+async def websocket(ws: WebSocket):
+    await ws.accept()
 
-# --------------------------
-# DEV FILE
-# --------------------------
-@app.get("/dev", response_class=HTMLResponse)
-def dev(path: str = ""):
-    root = Path(".") if not path else Path(path)
-    if root.is_file():
-        content = html.escape(root.read_text())
-        return f"""
-<form method="post" action="/dev/save">
-<input name="path" value="{path}">
-<textarea name="content" style="width:100%;height:80vh;">{content}</textarea>
-<button>save</button>
-</form>
-"""
-    items = ""
-    for p in root.iterdir():
-        items += f"<li><a href='/dev?path={p}'>{p}</a></li>"
-    return f"<ul>{items}</ul>"
+    sid = create_session()
+    SESSIONS[sid]["ws"] = ws
 
-@app.post("/dev/save")
-def dev_save(path: str = Form(...), content: str = Form(...)):
-    Path(path).write_text(content)
-    return RedirectResponse("/dev")
+    await ws.send_json({"type":"init","sid":sid})
+
+    rid = match_user(sid)
+
+    if rid:
+        for u in ROOMS[rid]:
+            other_ws = SESSIONS[u]["ws"]
+            await other_ws.send_json({"type":"match"})
+
+    try:
+        while True:
+            data = await ws.receive_json()
+            text = data.get("text","")
+
+            rid = SESSIONS[sid]["room"]
+            if not rid:
+                continue
+
+            users = ROOMS[rid]
+            target = users[0] if users[1]==sid else users[1]
+
+            # GPT 번역
+            r = client.chat.completions.create(
+                model="gpt-4.1-mini",
+                messages=[{"role":"user","content":text}]
+            )
+            translated = r.choices[0].message.content
+
+            target_ws = SESSIONS[target]["ws"]
+
+            await target_ws.send_json({
+                "type":"msg",
+                "text": translated
+            })
+
+    except WebSocketDisconnect:
+        pass
