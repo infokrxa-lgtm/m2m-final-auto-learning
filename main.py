@@ -70,75 +70,50 @@ function go(s){
 # ---------------- APP ----------------
 @app.get("/app", response_class=HTMLResponse)
 def app_ui(service: str = "free"):
-    page = """
+    return f"""
 <html>
-<head>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<style>
-body{margin:0;font-family:Arial;background:#eef2f7}
-.wrap{max-width:480px;margin:auto;height:100vh;display:flex;flex-direction:column}
-.header{background:white;padding:15px;font-weight:bold;border-bottom:1px solid #ddd}
-.chat{flex:1;overflow:auto;padding:10px}
-.msg{padding:10px;border-radius:12px;margin:8px 0;max-width:80%}
-.me{background:#dbeafe;margin-left:auto}
-.bot{background:white;border:1px solid #ddd}
-.input{padding:10px;background:white;border-top:1px solid #ddd}
-textarea{width:100%;border-radius:10px;padding:10px}
-button{margin-top:5px;padding:10px;width:100%;border:none;border-radius:10px;background:#2563eb;color:white;font-weight:bold}
-.card{background:#fff;padding:10px;border-radius:10px;margin:5px 0;border:1px solid #ddd}
-</style>
-</head>
 <body>
-<div class="wrap">
-  <div class="header">__SERVICE__ 서비스</div>
+<h1>{service} 서비스</h1>
 
-  <div id="chat" class="chat"></div>
-  <div id="cards"></div>
+<textarea id="t" style="width:300px;height:80px;"></textarea><br>
+<button onclick="send()">전송</button>
 
-  <div class="input">
-    <textarea id="t" placeholder="말하거나 입력하세요"></textarea>
-    <button onclick="send()">전송</button>
-  </div>
-</div>
+<div id="chat"></div>
+<div id="cards"></div>
 
 <script>
-async function send(){
- let text = document.getElementById("t").value;
+async function send(){{
+    let text = document.getElementById("t").value;
+    let fd = new FormData();
+    fd.append("text", text);
 
- let fd = new FormData();
- fd.append("text", text);
+    let r = await fetch("/chat", {{
+        method: "POST",
+        body: fd
+    }});
+    let j = await r.json();
 
- let r = await fetch("/chat", {
-  method:"POST",
-  body:fd
- });
+    document.getElementById("chat").innerHTML += "<p><b>나:</b> " + text + "</p>";
+    document.getElementById("chat").innerHTML += "<p><b>KRXA:</b> " + j.result + "</p>";
 
- let j = await r.json();
-
- let chat = document.getElementById("chat");
- chat.innerHTML += "<div class='msg me'>"+text+"</div>";
- chat.innerHTML += "<div class='msg bot'>"+j.result+"</div>";
-
- let cardsDiv = document.getElementById("cards");
- cardsDiv.innerHTML = "";
-
- if(j.cards){
-  j.cards.forEach(function(c){
-   if(c.url){
-    cardsDiv.innerHTML += "<div class='card'><a href='"+c.url+"' target='_blank'>"+c.label+"</a></div>";
-   }else{
-    cardsDiv.innerHTML += "<div class='card'>"+c.text+"</div>";
-   }
-  });
- }
-
- chat.scrollTop = chat.scrollHeight;
-}
+    let html = "";
+    if(j.cards){{
+        j.cards.forEach(function(c){{
+            if(c.url){{
+                html += "<p><a href='" + c.url + "' target='_blank'>" + c.label + "</a></p>";
+            }} else {{
+                html += "<p>" + c.text + "</p>";
+            }}
+        }});
+    }}
+    document.getElementById("cards").innerHTML = html;
+}}
 </script>
+
+<br><a href="/user">← 돌아가기</a>
 </body>
 </html>
 """
-    return page.replace("__SERVICE__", service)
 # ---------------- CONTROL ----------------
 @app.get("/control", response_class=HTMLResponse)
 def control():
