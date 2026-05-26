@@ -114,18 +114,22 @@ async function send(){{
     chat.innerHTML += "<div class='msg me'><b>나:</b> " + text + "</div>";
     chat.innerHTML += "<div class='msg krxa'><b>KRXA:</b> " + j.result + "</div>";
 
-    let html = "";
-    if(j.cards){{
-        j.cards.forEach(function(c){{
-            if(c.url){{
-                html += "<div class='card'><a href='" + c.url + "' target='_blank'>" + c.label + "</a></div>";
-            }} else {{
-                html += "<div class='card'>" + c.text + "</div>";
-            }}
-        }});
-    }}
-
-    document.getElementById("cards").innerHTML = html;
+ let html = "";
+if(j.cards && j.cards.length > 0){
+    j.cards.forEach(function(c){
+        if(c.url){
+            html += "<div class='card'><a href='" + c.url + "' target='_blank'>" + c.label + "</a></div>";
+        } else if(c.text){
+            html += "<div class='card'><b>" + c.label + "</b><br>" + c.text + "</div>";
+        }
+    });
+}
+document.getElementById("cards").innerHTML = html;
+let msgs = chat.querySelectorAll(".msg");
+if(msgs.length > 8){
+    msgs[0].remove();
+    msgs[1].remove();
+}
 }}
 </script>
 </body>
