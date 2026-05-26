@@ -508,10 +508,11 @@ async function login(){
 
 @app.get("/user", response_class=HTMLResponse)
 def user_ui():
-    tabs = ""for k, v in MODES.items():
-    tabs += f"<button onclick=\"openMode('{k}')\">{v}</button>"
+    tabs = ""
+    for k, v in MODES.items():
+        tabs += f"<button onclick=\"openMode('{k}')\">{v}</button>"
 
-return f"""
+    return f"""
 <html><head><meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 body{{margin:0;background:#071426;color:white;font-family:Arial}}
