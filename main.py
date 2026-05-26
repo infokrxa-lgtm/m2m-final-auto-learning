@@ -2,15 +2,14 @@ from fastapi import FastAPI, Form
 from fastapi.responses import HTMLResponse
 from krxa_engine import process
 from krxa_travel import get_cards
-from krxa_store import (
-    new_id,
-    load_history,
-    save_turn,
-    clear_history,
-    load_logs
-)
+from krxa_store import new_id, load_history, save_turn, clear_history, load_logs
 
 app = FastAPI()
+
+
+@app.get("/")
+def root():
+    return {"ok": True, "version": "V62-STABLE"}
 
 
 @app.post("/chat")
@@ -60,14 +59,9 @@ def history(session_id: str):
 def state():
     return {
         "ok": True,
-        "version": "V61-MEMORY",
+        "version": "V62-STABLE",
         "logs": load_logs(80)
     }
-
-
-@app.get("/")
-def root():
-    return {"ok": True, "version": "V61-MEMORY"}
 
 
 @app.get("/user", response_class=HTMLResponse)
@@ -79,18 +73,16 @@ def user():
 <style>
 body{font-family:Arial;background:#eef2f7;margin:0}
 .wrap{max-width:480px;margin:auto;padding:24px}
-.card{background:white;padding:20px;margin:14px 0;border-radius:18px;box-shadow:0 6px 18px rgba(0,0,0,.08);cursor:pointer}
 h1{text-align:center}
+.card{background:white;padding:20px;margin:14px 0;border-radius:18px;box-shadow:0 6px 18px rgba(0,0,0,.08);cursor:pointer;font-size:18px}
 </style>
 </head>
 <body>
 <div class="wrap">
 <h1>KRXA 여행 도우미</h1>
-
 <div class="card" onclick="openService('food')">🍴 맛집 찾기</div>
 <div class="card" onclick="openService('map')">📍 길찾기</div>
 <div class="card" onclick="openService('hotel')">🏨 숙소</div>
-
 </div>
 
 <script>
@@ -115,8 +107,6 @@ body{
     font-family:Arial;
     background:#f5f7fb;
 }
-
-/* 상단 */
 .header{
     padding:16px;
     text-align:center;
@@ -124,73 +114,70 @@ body{
     background:#0b1f3a;
     color:white;
 }
-
-/* 대화 영역 */
 .chat{
-    height:60vh;
+    height:58vh;
     overflow-y:auto;
-    padding:10px;
+    padding:12px;
+    box-sizing:border-box;
 }
-
-/* 메시지 */
 .msg{
-    padding:10px;
-    margin:6px 0;
-    border-radius:10px;
+    padding:11px;
+    margin:7px 0;
+    border-radius:12px;
+    line-height:1.4;
 }
-
-.user{ background:#dbeafe; }
-.krxa{ background:#e5e7eb; }
-
-/* 카드 */
+.user{
+    background:#dbeafe;
+}
+.krxa{
+    background:#e5e7eb;
+}
 .cards{
     padding:10px;
+    max-height:22vh;
+    overflow-y:auto;
+    box-sizing:border-box;
 }
-
 .card{
     background:white;
     padding:12px;
-    margin:6px 0;
-    border-radius:10px;
-    box-shadow:0 2px 6px rgba(0,0,0,.1);
+    margin:7px 0;
+    border-radius:12px;
+    box-shadow:0 2px 6px rgba(0,0,0,.12);
 }
-
 .card a{
     text-decoration:none;
     color:#2563eb;
     font-weight:bold;
 }
-
-/* 입력 영역 */
 .inputBox{
     position:fixed;
+    left:0;
     bottom:0;
     width:100%;
     background:white;
     padding:10px;
     border-top:1px solid #ddd;
+    box-sizing:border-box;
 }
-
 textarea{
-    width:70%;
-    height:50px;
+    width:68%;
+    height:52px;
+    box-sizing:border-box;
+    vertical-align:top;
 }
-
 button{
     padding:10px;
     margin-left:4px;
 }
-
-/* 기능 버튼 */
 .tools{
     font-size:12px;
-    margin-top:5px;
+    margin-top:6px;
 }
 </style>
 </head>
 
 <body>
-
 <div class="header">__SERVICE__ 서비스</div>
 
 <div id="chat" class="chat"></div>
@@ -200,7 +187,6 @@ button{
     <textarea id="t" placeholder="사용자 입력 언어로 입력하세요"></textarea>
     <button onclick="send()">전송</button>
     <button onclick="clearMemory()">초기화</button>
-
     <div class="tools">
         <a href="/user">← 홈</a> |
         <a id="historyLink" href="#" onclick="this.href='/history?session_id='+sessionId" target="_blank">기억보기</a>
@@ -217,7 +203,10 @@ if(!sessionId){
 async function send(){
     let input = document.getElementById("t");
     let text = input.value.trim();
-    if(!text){ return; }
+    if(!text){
+        return;
+    }
+
     input.value = "";
 
     let fd = new FormData();
@@ -226,31 +215,41 @@ async function send(){
     fd.append("session_id", sessionId);
 
     let r = await fetch("/chat", {
-        method:"POST",
-        body:fd
+        method: "POST",
+        body: fd
     });
 
     let j = await r.json();
 
+    if(j.session_id){
+        sessionId = j.session_id;
+        localStorage.setItem("krxa_session_id", sessionId);
+    }
+
     let chat = document.getElementById("chat");
-
-    chat.innerHTML += "<div class='msg user'>"+text+"</div>";
-    chat.innerHTML += "<div class='msg krxa'>"+j.result+"</div>";
-
-    chat.scrollTop = chat.scrollHeight;
+    chat.innerHTML += "<div class=\\"msg user\\"><b>나:</b> " + text + "</div>";
+    chat.innerHTML += "<div class=\\"msg krxa\\"><b>KRXA:</b> " + j.result + "</div>";
 
     let html = "";
-    if(j.cards){
+    if(j.cards && j.cards.length > 0){
         j.cards.forEach(function(c){
             if(c.url){
-                html += "<div class='card'><a href='"+c.url+"' target='_blank'>"+c.label+"</a></div>";
+                html += "<div class=\\"card\\"><a href=\\"" + c.url + "\\" target=\\"_blank\\">" + c.label + "</a></div>";
             } else if(c.text){
-                html += "<div class='card'><b>"+c.label+"</b><br>"+c.text+"</div>";
+                html += "<div class=\\"card\\"><b>" + c.label + "</b><br>" + c.text + "</div>";
             }
         });
     }
 
     document.getElementById("cards").innerHTML = html;
+
+    let msgs = chat.querySelectorAll(".msg");
+    if(msgs.length > 8){
+        msgs[0].remove();
+        msgs[1].remove();
+    }
+
+    chat.scrollTop = chat.scrollHeight;
 }
 
 async function clearMemory(){
@@ -258,15 +257,15 @@ async function clearMemory(){
     fd.append("session_id", sessionId);
 
     await fetch("/history/clear", {
-        method:"POST",
-        body:fd
+        method: "POST",
+        body: fd
     });
 
     document.getElementById("chat").innerHTML = "";
     document.getElementById("cards").innerHTML = "";
+    alert("KRXA 기억을 초기화했습니다.");
 }
 </script>
-
 </body>
 </html>
 """
@@ -276,12 +275,12 @@ async function clearMemory(){
 @app.get("/control", response_class=HTMLResponse)
 def control():
     logs = load_logs(80)
-    return f"""
+    return """
 <html>
 <body>
 <h1>KRXA CONTROL</h1>
 <p>관제 화면</p>
-<pre>{logs}</pre>
+<pre>""" + str(logs) + """</pre>
 </body>
 </html>
 """
