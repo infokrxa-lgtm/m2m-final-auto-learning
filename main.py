@@ -56,36 +56,63 @@ function openService(service){
 
 @app.get("/app", response_class=HTMLResponse)
 def app_ui(service: str = "free"):
-    return f"""
+    page = """
 <html>
-<head>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<style>
-body{{font-family:Arial;background:#eef2f7;margin:0}}
-.wrap{{max-width:520px;margin:auto;min-height:100vh;background:white;padding:20px;box-sizing:border-box}}
-h1{{font-size:28px}}
-textarea{{width:100%;height:90px;box-sizing:border-box;border-radius:12px;padding:12px;font-size:16px}}
-button{{padding:10px 16px;border:0;border-radius:10px;background:#2563eb;color:white;font-weight:bold;margin-top:8px}}
-.msg{{padding:12px;margin:10px 0;border-radius:12px}}
-.me{{background:#dbeafe}}
-.krxa{{background:#f3f4f6}}
-.card{{padding:12px;margin:8px 0;border-radius:12px;background:#fff7ed;border:1px solid #fed7aa}}
-a{{color:#2563eb;font-weight:bold}}
-</style>
-</head>
-
 <body>
-<div class="wrap">
-<h1>{service} 서비스</h1>
+<h1>__SERVICE__ 서비스</h1>
 
-<textarea id="t" placeholder="사용자 입력 언어로 입력하세요"></textarea><br>
+<textarea id="t" style="width:300px;height:80px;" placeholder="사용자 입력 언어로 입력하세요"></textarea><br>
 <button onclick="send()">전송</button>
 
 <div id="chat"></div>
 <div id="cards"></div>
 
+<script>
+async function send(){
+    let input = document.getElementById("t");
+    let text = input.value.trim();
+    if(!text){ return; }
+    input.value = "";
+
+    let fd = new FormData();
+    fd.append("text", text);
+    fd.append("service", "__SERVICE__");
+
+    let r = await fetch("/chat", {
+        method: "POST",
+        body: fd
+    });
+    let j = await r.json();
+
+    let chat = document.getElementById("chat");
+    chat.innerHTML += "<div class='msg'><b>나:</b> " + text + "</div>";
+    chat.innerHTML += "<div class='msg'><b>KRXA:</b> " + j.result + "</div>";
+
+    let html = "";
+    if(j.cards && j.cards.length > 0){
+        j.cards.forEach(function(c){
+            if(c.url){
+                html += "<div class='card'><a href='" + c.url + "' target='_blank'>" + c.label + "</a></div>";
+            } else if(c.text){
+                html += "<div class='card'><b>" + c.label + "</b><br>" + c.text + "</div>";
+            }
+        });
+    }
+    document.getElementById("cards").innerHTML = html;
+
+    let msgs = chat.querySelectorAll(".msg");
+    if(msgs.length > 8){
+        msgs[0].remove();
+        msgs[1].remove();
+    }
+}
+</script>
+
 <br><a href="/user">← 사용자 화면으로 돌아가기</a>
-</div>
+</body>
+</html>
+"""
+    return page.replace("__SERVICE__", service)
 
 <script>
 async function send(){{
