@@ -22,55 +22,134 @@ def root():
 @app.get("/user", response_class=HTMLResponse)
 def user():
     return """
-    <h1>KRXA USER</h1>
-    <p>여행 서비스 UI</p>
-    <a href="/app?service=food">맛집</a><br>
-    <a href="/app?service=map">길찾기</a><br>
-    <a href="/app?service=hotel">숙소</a><br>
-    """
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body{margin:0;font-family:Arial;background:#f5f7fb}
+.wrap{max-width:480px;margin:auto;padding:20px}
+.title{font-size:26px;font-weight:bold}
+.card{background:white;padding:20px;margin-top:15px;border-radius:16px;box-shadow:0 4px 12px rgba(0,0,0,0.08);cursor:pointer}
+.card:hover{transform:scale(1.02)}
+.icon{font-size:24px}
+</style>
+</head>
+
+<body>
+<div class="wrap">
+
+<div class="title">KRXA 여행 도우미</div>
+
+<div class="card" onclick="go('food')">
+<div class="icon">🍴</div>
+맛집 찾기
+</div>
+
+<div class="card" onclick="go('map')">
+<div class="icon">📍</div>
+길찾기
+</div>
+
+<div class="card" onclick="go('hotel')">
+<div class="icon">🏨</div>
+숙소
+</div>
+
+</div>
+
+<script>
+function go(s){
+ location.href="/app?service="+s;
+}
+</script>
+
+</body>
+</html>
+"""
 
 # ---------------- APP ----------------
 @app.get("/app", response_class=HTMLResponse)
 def app_ui(service: str = "free"):
     return f"""
-<h1>서비스 실행: {service}</h1>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body{{margin:0;font-family:Arial;background:#eef2f7}}
+.wrap{{max-width:480px;margin:auto;height:100vh;display:flex;flex-direction:column}}
 
-<textarea id="t"></textarea><br>
+.header{{background:white;padding:15px;font-weight:bold;border-bottom:1px solid #ddd}}
+.chat{{flex:1;overflow:auto;padding:10px}}
+
+.msg{{padding:10px;border-radius:12px;margin:8px 0;max-width:80%}}
+.me{{background:#dbeafe;margin-left:auto}}
+.bot{{background:white;border:1px solid #ddd}}
+
+.input{{padding:10px;background:white;border-top:1px solid #ddd}}
+textarea{{width:100%;border-radius:10px;padding:10px}}
+
+button{{margin-top:5px;padding:10px;width:100%;border:none;border-radius:10px;background:#2563eb;color:white;font-weight:bold}}
+
+.card{{background:#fff;padding:10px;border-radius:10px;margin:5px 0;border:1px solid #ddd}}
+</style>
+</head>
+
+<body>
+<div class="wrap">
+
+<div class="header">
+{service} 서비스
+</div>
+
+<div id="chat" class="chat"></div>
+
+<div id="cards"></div>
+
+<div class="input">
+<textarea id="t" placeholder="말하거나 입력하세요"></textarea>
 <button onclick="send()">전송</button>
+</div>
 
-<div id="out"></div>
+</div>
 
 <script>
 async function send(){{
-    let text = document.getElementById("t").value;
+ let text = document.getElementById("t").value;
 
-    let fd = new FormData();
-    fd.append("text", text);
+ let fd = new FormData();
+ fd.append("text", text);
 
-    let r = await fetch("/chat", {{
-        method:"POST",
-        body:fd
-    }});
+ let r = await fetch("/chat", {{
+  method:"POST",
+  body:fd
+ }});
 
-    let j = await r.json();
+ let j = await r.json();
 
-    document.getElementById("out").innerHTML += "<p>"+j.result+"</p>";
+ let chat = document.getElementById("chat");
 
-    if(j.cards){{
-        j.cards.forEach(c=>{{
-            if(c.url){{
-                document.getElementById("out").innerHTML +=
-                    "<a href='"+c.url+"' target='_blank'>"+c.label+"</a><br>";
-            }}else{{
-                document.getElementById("out").innerHTML +=
-                    "<p>"+c.text+"</p>";
-            }}
-        }});
-    }}
-}}
+ chat.innerHTML += "<div class='msg me'>"+text+"</div>";
+ chat.innerHTML += "<div class='msg bot'>"+j.result+"</div>";
+
+ let cardsDiv = document.getElementById("cards");
+ cardsDiv.innerHTML = "";
+
+ if(j.cards){{
+  j.cards.forEach(c=>{{
+   if(c.url){{
+    cardsDiv.innerHTML += "<div class='card'><a href='"+c.url+"' target='_blank'>"+c.label+"</a></div>";
+   }}else{{
+    cardsDiv.innerHTML += "<div class='card'>"+c.text+"</div>";
+   }}
+  }});
+ }}
+
+ chat.scrollTop = chat.scrollHeight;
+}
 </script>
 
-<br><a href="/user">← 돌아가기</a>
+</body>
+</html>
 """
 # ---------------- CONTROL ----------------
 @app.get("/control", response_class=HTMLResponse)
