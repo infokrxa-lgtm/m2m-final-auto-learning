@@ -508,8 +508,10 @@ async function login(){
 
 @app.get("/user", response_class=HTMLResponse)
 def user_ui():
-    tabs = "".join([f"<button onclick=\"openMode('{k}')\">{v}</button>" for k, v in MODES.items()])
-    return f"""
+    tabs = ""for k, v in MODES.items():
+    tabs += f"<button onclick=\"openMode('{k}')\">{v}</button>"
+
+return f"""
 <html><head><meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 body{{margin:0;background:#071426;color:white;font-family:Arial}}
@@ -605,13 +607,23 @@ async function recordTranslate(){{const stream=await navigator.mediaDevices.getU
 @app.get("/control", response_class=HTMLResponse)
 def control():
     state = api_state()
+
+    buttons = ""
+    for k, v in MODES.items():
+        buttons += f"<button onclick=\"location.href='/app?mode={k}'\">{v}</button>"
+
     return f"""
 <html><body style="background:#071426;color:white;font-family:Arial;padding:20px">
 <h1>KRXA V53 CONTROL</h1>
-<p><a style="color:#8ab4ff" href="/user">USER</a> | <a style="color:#8ab4ff" href="/dev">DEV</a> | <a style="color:#8ab4ff" href="/api/state">STATE</a></p>
+<p>
+<a style="color:#8ab4ff" href="/user">USER</a> |
+<a style="color:#8ab4ff" href="/dev">DEV</a> |
+<a style="color:#8ab4ff" href="/api/state">STATE</a>
+</p>
 <h2>실행</h2>
-{''.join([f"<button onclick=\\"location.href='/app?mode={k}'\\">{v}</button>" for k,v in MODES.items()])}
-<h2>DB 상태</h2><pre>{html.escape(json.dumps(state, ensure_ascii=False, indent=2, default=str))}</pre>
+{buttons}
+<h2>DB 상태</h2>
+<pre>{html.escape(json.dumps(state, ensure_ascii=False, indent=2, default=str))}</pre>
 </body></html>
 """
 
