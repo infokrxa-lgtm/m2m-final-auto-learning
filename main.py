@@ -9,7 +9,7 @@ app = FastAPI()
 
 @app.get("/")
 def root():
-    return {"ok": True, "version": "V62-STABLE"}
+    return {"ok": True, "version": "V62-STABLE-FLEX"}
 
 
 @app.post("/chat")
@@ -59,7 +59,7 @@ def history(session_id: str):
 def state():
     return {
         "ok": True,
-        "version": "V62-STABLE",
+        "version": "V62-STABLE-FLEX",
         "logs": load_logs(80)
     }
 
@@ -107,6 +107,11 @@ body{
     font-family:Arial;
     background:#f5f7fb;
 }
+.wrap{
+    height:100vh;
+    display:flex;
+    flex-direction:column;
+}
 .header{
     padding:16px;
     text-align:center;
@@ -115,7 +120,7 @@ body{
     color:white;
 }
 .chat{
-    height:58vh;
+    flex:1;
     overflow-y:auto;
     padding:12px;
     box-sizing:border-box;
@@ -134,7 +139,7 @@ body{
 }
 .cards{
     padding:10px;
-    max-height:22vh;
+    max-height:160px;
     overflow-y:auto;
     box-sizing:border-box;
 }
@@ -151,24 +156,19 @@ body{
     font-weight:bold;
 }
 .inputBox{
-    position:fixed;
-    left:0;
-    bottom:0;
-    width:100%;
     background:white;
     padding:10px;
     border-top:1px solid #ddd;
     box-sizing:border-box;
 }
 textarea{
-    width:68%;
-    height:52px;
+    width:100%;
+    height:58px;
     box-sizing:border-box;
-    vertical-align:top;
 }
 button{
     padding:10px;
-    margin-left:4px;
+    margin-top:6px;
 }
 .tools{
     font-size:12px;
@@ -178,18 +178,21 @@ button{
 </head>
 
 <body>
-<div class="header">__SERVICE__ 서비스</div>
+<div class="wrap">
+    <div class="header">__SERVICE__ 서비스</div>
 
-<div id="chat" class="chat"></div>
-<div id="cards" class="cards"></div>
+    <div id="chat" class="chat"></div>
+    <div id="cards" class="cards"></div>
 
-<div class="inputBox">
-    <textarea id="t" placeholder="사용자 입력 언어로 입력하세요"></textarea>
-    <button onclick="send()">전송</button>
-    <button onclick="clearMemory()">초기화</button>
-    <div class="tools">
-        <a href="/user">← 홈</a> |
-        <a id="historyLink" href="#" onclick="this.href='/history?session_id='+sessionId" target="_blank">기억보기</a>
+    <div class="inputBox">
+        <textarea id="t" placeholder="사용자 입력 언어로 입력하세요"></textarea>
+        <br>
+        <button onclick="send()">전송</button>
+        <button onclick="clearMemory()">초기화</button>
+        <div class="tools">
+            <a href="/user">← 홈</a> |
+            <a id="historyLink" href="#" onclick="this.href='/history?session_id='+sessionId" target="_blank">기억보기</a>
+        </div>
     </div>
 </div>
 
@@ -227,16 +230,16 @@ async function send(){
     }
 
     let chat = document.getElementById("chat");
-    chat.innerHTML += "<div class=\\"msg user\\"><b>나:</b> " + text + "</div>";
-    chat.innerHTML += "<div class=\\"msg krxa\\"><b>KRXA:</b> " + j.result + "</div>";
+    chat.innerHTML += "<div class='msg user'><b>나:</b> " + text + "</div>";
+    chat.innerHTML += "<div class='msg krxa'><b>KRXA:</b> " + j.result + "</div>";
 
     let html = "";
     if(j.cards && j.cards.length > 0){
         j.cards.forEach(function(c){
             if(c.url){
-                html += "<div class=\\"card\\"><a href=\\"" + c.url + "\\" target=\\"_blank\\">" + c.label + "</a></div>";
+                html += "<div class='card'><a href='" + c.url + "' target='_blank'>" + c.label + "</a></div>";
             } else if(c.text){
-                html += "<div class=\\"card\\"><b>" + c.label + "</b><br>" + c.text + "</div>";
+                html += "<div class='card'><b>" + c.label + "</b><br>" + c.text + "</div>";
             }
         });
     }
